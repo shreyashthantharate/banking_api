@@ -1731,6 +1731,7 @@
 
     <script>
         const PER_PAGE = 10;
+        let currentRecordDetail = null;
 
         let currentTab = "all";
         let currentPage = 1;
@@ -1802,6 +1803,55 @@
             if (String(row.payment_status || "").trim() === "Pending") return "pending";
             if (String(row.payment_status || "").trim() === "Failed") return "failed";
             return "unknown";
+        }
+
+
+        function pad2(value) {
+            return String(value).padStart(2, "0");
+        }
+
+        function parseDateValue(value) {
+            if (!value) return null;
+
+            let cleaned = String(value).trim();
+            if (!cleaned) return null;
+
+            if (cleaned.includes(".")) {
+                cleaned = cleaned.split(".")[0];
+            }
+
+            const m = cleaned.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+            if (m) {
+                return new Date(
+                    Number(m[1]),
+                    Number(m[2]) - 1,
+                    Number(m[3]),
+                    Number(m[4] || 0),
+                    Number(m[5] || 0),
+                    Number(m[6] || 0)
+                );
+            }
+
+            const dt = new Date(cleaned.replace(" ", "T"));
+            return isNaN(dt.getTime()) ? null : dt;
+        }
+
+        function formatDate(value) {
+            if (!value) return "-";
+
+            const dt = parseDateValue(value);
+            if (!dt) return String(value);
+
+            return `${pad2(dt.getDate())}-${pad2(dt.getMonth() + 1)}-${dt.getFullYear()}`;
+        }
+
+        function formatDateTime(value) {
+            if (!value) return "-";
+
+            const dt = parseDateValue(value);
+            if (!dt) return String(value);
+
+            return `${pad2(dt.getDate())}-${pad2(dt.getMonth() + 1)}-${dt.getFullYear()}`;
         }
 
         function getStatusLabel(row) {
@@ -2683,9 +2733,13 @@
             }
 
             if (text) {
-                if (fromDate && toDate) text.textContent = `${fromDate} to ${toDate}`;
-                else if (fromDate) text.textContent = `From ${fromDate}`;
-                else if (toDate) text.textContent = `Up to ${toDate}`;
+                // if (fromDate && toDate) text.textContent = `${fromDate} to ${toDate}`;
+                // else if (fromDate) text.textContent = `From ${fromDate}`;
+                // else if (toDate) text.textContent = `Up to ${toDate}`;
+                // else text.textContent = "No date selected";
+                if (fromDate && toDate) text.textContent = `${formatDate(fromDate)} to ${formatDate(toDate)}`;
+                else if (fromDate) text.textContent = `From ${formatDate(fromDate)}`;
+                else if (toDate) text.textContent = `Up to ${formatDate(toDate)}`;
                 else text.textContent = "No date selected";
             }
         }
@@ -2881,10 +2935,14 @@
                         csvSafe(getStatusLabel(row)),
                         csvSafe(cintLike(row.insufficient_balance)),
                         csvSafe(cintLike(row.account_closed)),
-                        csvSafe(row.fund_transfer_date),
-                        csvSafe(row.cif_creation_date),
-                        csvSafe(row.account_opening_date),
-                        csvSafe(row.modified),
+                        // csvSafe(row.fund_transfer_date),
+                        // csvSafe(row.cif_creation_date),
+                        // csvSafe(row.account_opening_date),
+                        // csvSafe(row.modified),
+                        csvSafe(formatDateTime(row.fundtransferdate)),
+                        csvSafe(formatDate(row.cifcreationdate)),
+                        csvSafe(formatDate(row.accountopeningdate)),
+                        csvSafe(formatDateTime(row.modified)),
                         csvSafe(row.error_log)
                     ].join(","));
                 });
@@ -2975,18 +3033,40 @@
             const modalHtml = `
             <div id="recordDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;align-items:center;justify-content:center;padding:24px;">
                 <div id="recordDetailModal" style="width:min(920px,100%);max-height:90vh;overflow:hidden;background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-xl);box-shadow:0 20px 60px rgba(0,0,0,.55);display:flex;flex-direction:column;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--bg-surface);">
-                        <div>
-                            <div style="font-size:18px;font-weight:600;color:var(--text-primary);">Share Application Details</div>
-                            <div id="recordDetailSub" style="font-size:12px;color:var(--text-secondary);margin-top:2px;">Loading...</div>
-                        </div>
-                        <button onclick="closeRecordModal()" aria-label="Close" style="width:34px;height:34px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);cursor:pointer;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--bg-surface);gap:16px;">
+    <div>
+        <div style="font-size:18px;font-weight:600;color:var(--text-primary);">Share Application Details</div>
+        <div id="recordDetailSub" style="font-size:12px;color:var(--text-secondary);margin-top:2px;">Loading...</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <button
+            id="printShareCertBtn"
+            onclick="openShareCertificateModal()"
+            style="height:36px;padding:0 14px;border:1px solid var(--accent);border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500;display:none;align-items:center;gap:8px;transition:background .15s,border-color .15s,opacity .15s;"
+            onmouseover="this.style.background='var(--accent-hover)';this.style.borderColor='var(--accent-hover)'"
+            onmouseout="this.style.background='var(--accent)';this.style.borderColor='var(--accent)'"
+        >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9V2h12v7"></path>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print Share Certificate
+        </button>
+
+        <button
+            onclick="closeRecordModal()"
+            aria-label="Close"
+            style="width:34px;height:34px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);cursor:pointer;"
+        >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+</div>
                     <div id="recordDetailBody" style="padding:20px;overflow:auto;"></div>
                 </div>
             </div>
@@ -2999,16 +3079,68 @@
             });
         }
 
+        // async function openRecordModal(cif) {
+        //     ensureModal();
+
+        //     const overlay = document.getElementById("recordDetailOverlay");
+        //     const sub = document.getElementById("recordDetailSub");
+        //     const body = document.getElementById("recordDetailBody");
+
+        //     overlay.style.display = "flex";
+        //     sub.textContent = "Fetching record details...";
+        //     body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-secondary);">Loading details...</div>`;
+
+        //     try {
+        //         const doc = await apiCall("banking_api.www.share_tracker.get_share_application_by_cif", {
+        //             cif: decodeURIComponent(cif)
+        //         });
+
+        //         if (!doc) {
+        //             sub.textContent = "Record not found";
+        //             body.innerHTML = `<div style="color:var(--text-secondary);">No details found for CIF ${escapeHtml(decodeURIComponent(cif))}</div>`;
+        //             return;
+        //         }
+
+        //         sub.textContent = `CIF ${doc.cif || "-"} · ${doc.name || "-"}`;
+        //         body.innerHTML = `
+        //         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+        //             ${detailCard("SOL ID", doc.sol_id)}
+        //             ${detailCard("SOL Description", doc.sol_desc || "-")}
+        //             ${detailCard("CIF", doc.cif)}
+        //             ${detailCard("Account Number", doc.account_number)}
+        //             ${detailCard("Transaction ID", doc.transaction_id || "-")}
+        //             ${detailCard("Payment Status", doc.payment_status || "-")}
+        //             ${detailCard("Insufficient Balance", cintLike(doc.insufficient_balance) ? "Yes" : "No")}
+        //             ${detailCard("Account Closed", cintLike(doc.account_closed) ? "Yes" : "No")}
+        //             ${detailCard("Fund Transfer Date", formatDateTime(doc.fund_transfer_date))}
+        //             ${detailCard("CIF Creation Date", formatDate(doc.cif_creation_date))}
+        //             ${detailCard("Account Opening Date", formatDate(doc.account_opening_date))}
+        //         </div>
+        //         <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
+        //             <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">API Response</div>
+        //             <pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6;color:var(--text-primary);font-family:'SF Mono','Fira Code',monospace;">${escapeHtml(doc.error_log || "-")}</pre>
+        //         </div>
+        //     `;
+        //     } catch (e) {
+        //         sub.textContent = "Error";
+        //         body.innerHTML = `<div style="color:var(--red);">Unable to fetch record details.</div>`;
+        //     }
+        // }
+
         async function openRecordModal(cif) {
             ensureModal();
 
             const overlay = document.getElementById("recordDetailOverlay");
             const sub = document.getElementById("recordDetailSub");
             const body = document.getElementById("recordDetailBody");
+            const printBtn = document.getElementById("printShareCertBtn");
 
             overlay.style.display = "flex";
             sub.textContent = "Fetching record details...";
             body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-secondary);">Loading details...</div>`;
+
+            currentRecordDetail = null;
+            if (printBtn) printBtn.style.display = "none";
 
             try {
                 const doc = await apiCall("banking_api.www.share_tracker.get_share_application_by_cif", {
@@ -3021,30 +3153,121 @@
                     return;
                 }
 
+                // currentRecordDetail = normalizeRecord(doc);
+                // currentRecordDetail.sol_desc = doc.sol_desc || "-";
+                currentRecordDetail = {
+                    ...doc,
+                    cif: doc.cif != null ? String(doc.cif) : "",
+                    account_number: doc.account_number != null ? String(doc.account_number) : "",
+                    sol_desc: doc.sol_desc || "-"
+                };
+
                 sub.textContent = `CIF ${doc.cif || "-"} · ${doc.name || "-"}`;
+
+                if (printBtn && String(doc.payment_status || "").trim() === "Success") {
+                    printBtn.style.display = "inline-flex";
+                }
+
                 body.innerHTML = `
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
-                    ${detailCard("SOL ID", doc.sol_id)}
-                    ${detailCard("SOL Description", doc.sol_desc || "-")}
-                    ${detailCard("CIF", doc.cif)}
-                    ${detailCard("Account Number", doc.account_number)}
-                    ${detailCard("Transaction ID", doc.transaction_id || "-")}
-                    ${detailCard("Payment Status", doc.payment_status || "-")}
-                    ${detailCard("Insufficient Balance", cintLike(doc.insufficient_balance) ? "Yes" : "No")}
-                    ${detailCard("Account Closed", cintLike(doc.account_closed) ? "Yes" : "No")}
-                    ${detailCard("Fund Transfer Date", formatDateTime(doc.fund_transfer_date))}
-                    ${detailCard("CIF Creation Date", formatDate(doc.cif_creation_date))}
-                    ${detailCard("Account Opening Date", formatDate(doc.account_opening_date))}
-                </div>
-                <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
-                    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">API Response</div>
-                    <pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6;color:var(--text-primary);font-family:'SF Mono','Fira Code',monospace;">${escapeHtml(doc.error_log || "-")}</pre>
-                </div>
-            `;
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
+        ${detailCard("Application ID", doc.name)}
+        ${detailCard("SOL ID", doc.sol_id)}
+        ${detailCard("SOL Description", doc.sol_desc || "-")}
+        ${detailCard("CIF", doc.cif)}
+        ${detailCard("Customer Name", doc.customer_name || "-")}
+        ${detailCard("Account Number", doc.account_number)}
+        ${detailCard("Transaction ID", doc.transaction_id || "-")}
+        ${detailCard("Payment Status", doc.payment_status || "-")}
+        ${detailCard("Insufficient Balance", cintLike(doc.insufficient_balance) ? "Yes" : "No")}
+        ${detailCard("Account Closed", cintLike(doc.account_closed) ? "Yes" : "No")}
+        ${detailCard("Account Frozen", cintLike(doc.account_frozen) ? "Yes" : "No")}
+        ${detailCard("Account Not Found", cintLike(doc.account_not_found) ? "Yes" : "No")}
+        ${detailCard("Retry Attempted", doc.retry_attempted ?? 0)}
+        ${detailCard("Last Retry Attempted", formatDateTime(doc.last_retry_attempted))}
+        ${detailCard("Fund Transfer Date", formatDateTime(doc.fund_transfer_date))}
+        ${detailCard("CIF Creation Date", formatDate(doc.cif_creation_date))}
+        ${detailCard("Account Opening Date", formatDate(doc.account_opening_date))}
+        ${detailCard("Scheme Type", doc.scheme_type || "-")}
+        ${detailCard("Scheme Code", doc.scheme_code || "-")}
+        ${detailCard("Transaction Amount", doc.transaction_amount != null ? formatNumber(doc.transaction_amount) : "-")}
+        ${detailCard("Modified", formatDateTime(doc.modified))}
+    </div>
+
+    <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Address</div>
+        <div style="font-size:14px;color:var(--text-primary);line-height:1.7;white-space:pre-wrap;word-break:break-word;">
+            ${escapeHtml(doc.address || "-")}
+        </div>
+    </div>
+
+    <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">API Response</div>
+        <pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6;color:var(--text-primary);font-family:'SF Mono','Fira Code',monospace;">${escapeHtml(doc.error_log || "-")}</pre>
+    </div>
+`;
             } catch (e) {
                 sub.textContent = "Error";
                 body.innerHTML = `<div style="color:var(--red);">Unable to fetch record details.</div>`;
             }
+        }
+
+        function ensureShareCertificateModal() {
+            if (document.getElementById("shareCertificateOverlay")) return;
+
+            const certHtml = `
+        <div id="shareCertificateOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:600;align-items:center;justify-content:center;padding:24px;">
+            <div style="width:min(1080px,100%);max-height:92vh;overflow:hidden;background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-xl);box-shadow:0 20px 60px rgba(0,0,0,.55);display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--bg-surface);gap:16px;">
+                    <div>
+                        <div style="font-size:18px;font-weight:600;color:var(--text-primary);">Share Certificate Preview</div>
+                        <div id="shareCertificateSub" style="font-size:12px;color:var(--text-secondary);margin-top:2px;">Preview</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <button
+                            onclick="downloadShareCertificatePdf()"
+                            style="height:36px;padding:0 14px;border:1px solid var(--accent);border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:8px;"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download PDF
+                        </button>
+                        <button
+                            onclick="closeShareCertificateModal()"
+                            aria-label="Close"
+                            style="width:34px;height:34px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);cursor:pointer;"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="padding:20px;overflow:auto;">
+                    <div style="overflow:auto;max-height:75vh;border:1px solid var(--border);background:var(--bg-surface);padding:16px;border-radius:var(--radius-lg);">
+                        <div id="share-certificate-preview" style="position:relative;width:1000px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;">
+                            <img
+                                src="/assets/banking_api/images/share_certificate.png"
+                                alt="Share Certificate"
+                                style="width:100%;display:block;"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML("beforeend", certHtml);
+
+            const overlay = document.getElementById("shareCertificateOverlay");
+            overlay.addEventListener("click", function (e) {
+                if (e.target === overlay) closeShareCertificateModal();
+            });
         }
 
         function detailCard(label, value) {
@@ -3054,6 +3277,169 @@
                 <div style="font-size:14px;color:var(--text-primary);font-weight:500;word-break:break-word;">${escapeHtml(value || "-")}</div>
             </div>
         `;
+        }
+
+        function closeShareCertificateModal() {
+            const overlay = document.getElementById("shareCertificateOverlay");
+            if (overlay) overlay.style.display = "none";
+        }
+
+        function getShareCertificatePositions() {
+            return {
+                certificate: {
+                    share_certificate_no: { top: 170, left: 495, width: 150, font_size: 12 },
+                    account_no: { top: 180, left: 832, width: 120, font_size: 12 },
+                    name: { top: 233, left: 454, width: 490, font_size: 12 },
+                    address: { top: 261, left: 418, width: 540, font_size: 11 },
+                    number_of_share: { top: 288, left: 544, width: 55, font_size: 12 },
+                    from_no: { top: 288, left: 765, width: 65, font_size: 12 },
+                    to_no: { top: 288, left: 904, width: 70, font_size: 12 },
+                    rs: { top: 315, left: 882, width: 80, font_size: 12 },
+                    issued_date: { top: 480, left: 630, width: 150, font_size: 12 }
+                },
+                receipt: {
+                    share_certificate_no: { top: 28, left: 24, width: 120, font_size: 12 },
+                    account_no: { top: 28, left: 202, width: 115, font_size: 12 },
+                    name: { top: 174, left: 78, width: 250, font_size: 12 },
+                    address: { top: 195, left: 52, width: 290, font_size: 11 },
+                    number_of_share: { top: 236, left: 184, width: 40, font_size: 12 },
+                    from_no: { top: 256, left: 113, width: 75, font_size: 12 },
+                    to_no: { top: 256, left: 265, width: 65, font_size: 12 },
+                    rs: { top: 297, left: 164, width: 70, font_size: 12 },
+                    issued_date: { top: 461, left: 187, width: 130, font_size: 12 }
+                }
+            };
+        }
+
+        function addShareCertificateText(preview, key, value, cfg) {
+            const node = document.createElement("div");
+            node.className = "share-cert-text";
+            node.setAttribute("data-key", key);
+            node.style.position = "absolute";
+            node.style.top = `${cfg.top}px`;
+            node.style.left = `${cfg.left}px`;
+            node.style.width = `${cfg.width}px`;
+            node.style.fontSize = `${cfg.font_size}px`;
+            node.style.lineHeight = "1.2";
+            node.style.fontWeight = "600";
+            node.style.color = "#111";
+            node.style.fontFamily = "Arial, sans-serif";
+
+            const shouldWrap = key.includes("address") || key.includes("name");
+            node.style.whiteSpace = shouldWrap ? "normal" : "nowrap";
+            node.style.wordBreak = shouldWrap ? "break-word" : "normal";
+            node.style.overflowWrap = shouldWrap ? "break-word" : "normal";
+
+            node.textContent = value || "";
+            preview.appendChild(node);
+        }
+
+        function buildShareCertificateData(doc) {
+            const today = new Date().toISOString().slice(0, 10);
+
+            return {
+                share_certificate_no: doc.name || "",
+                account_no: doc.account_number || "",
+                name: doc.customer_name || "—",
+                address: doc.address || "—",
+                number_of_share: "1",
+                from_no: "1",
+                to_no: "2",
+                rs: doc.transaction_amount != null ? String(doc.transaction_amount) : "10",
+                issued_date: doc.cif_creation_date ? formatDate(doc.cif_creation_date) : today
+            };
+        }
+
+        function openShareCertificateModal() {
+            if (!currentRecordDetail) return;
+
+            if (String(currentRecordDetail.payment_status || "").trim() !== "Success") {
+                if (window.frappe && frappe.show_alert) {
+                    frappe.show_alert({ message: "Share certificate is available only for successful applications.", indicator: "orange" });
+                }
+                return;
+            }
+
+            ensureShareCertificateModal();
+
+            const overlay = document.getElementById("shareCertificateOverlay");
+            const sub = document.getElementById("shareCertificateSub");
+            const preview = document.getElementById("share-certificate-preview");
+
+            if (!preview) return;
+
+            overlay.style.display = "flex";
+            sub.textContent = `CIF ${currentRecordDetail.cif || "-"} · ${currentRecordDetail.name || "-"}`;
+
+            preview.querySelectorAll(".share-cert-text").forEach(el => el.remove());
+
+            const certData = buildShareCertificateData(currentRecordDetail);
+            const positions = getShareCertificatePositions();
+
+            Object.keys(certData).forEach((key) => {
+                addShareCertificateText(preview, `certificate_${key}`, certData[key], positions.certificate[key]);
+            });
+
+            Object.keys(certData).forEach((key) => {
+                addShareCertificateText(preview, `receipt_${key}`, certData[key], positions.receipt[key]);
+            });
+        }
+
+        function loadScriptOnce(src) {
+            return new Promise((resolve, reject) => {
+                const existing = document.querySelector(`script[src="${src}"]`);
+                if (existing) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement("script");
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function downloadShareCertificatePdf() {
+            const target = document.getElementById("share-certificate-preview");
+            if (!target || !currentRecordDetail) return;
+
+            try {
+                await Promise.all([
+                    loadScriptOnce("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"),
+                    loadScriptOnce("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js")
+                ]);
+
+                const canvas = await window.html2canvas(target, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#ffffff"
+                });
+
+                const imgData = canvas.toDataURL("image/png");
+                const { jsPDF } = window.jspdf;
+
+                const pdf = new jsPDF("l", "mm", "a4");
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+
+                const finalWidth = imgWidth * ratio;
+                const finalHeight = imgHeight * ratio;
+                const x = (pdfWidth - finalWidth) / 2;
+                const y = (pdfHeight - finalHeight) / 2;
+
+                pdf.addImage(imgData, "PNG", x, y, finalWidth, finalHeight);
+                pdf.save(`Share-Certificate-${currentRecordDetail.name || "Document"}.pdf`);
+            } catch (e) {
+                console.error(e);
+                if (window.frappe && frappe.show_alert) {
+                    frappe.show_alert({ message: "Failed to generate PDF.", indicator: "red" });
+                }
+            }
         }
 
         function closeRecordModal() {

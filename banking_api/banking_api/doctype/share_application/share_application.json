@@ -1,7 +1,6 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "autoincrement",
  "creation": "2026-05-25 11:32:11.692402",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -16,14 +15,21 @@
   "column_break_ubfe",
   "fund_transfer_date",
   "cif_creation_date",
-  "account_opening_date",
   "payment_status",
+  "account_opening_date",
   "insufficient_balance",
   "account_closed",
   "account_frozen",
   "account_not_found",
   "retry_attempted",
-  "last_retry_attempted"
+  "last_retry_attempted",
+  "customer_details_section",
+  "customer_name",
+  "scheme_type",
+  "transaction_amount",
+  "column_break_ysjv",
+  "address",
+  "scheme_code"
  ],
  "fields": [
   {
@@ -104,6 +110,7 @@
    "search_index": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sol_id",
    "fieldtype": "Data",
    "label": "SOL ID",
@@ -145,17 +152,56 @@
    "fieldname": "last_retry_attempted",
    "fieldtype": "Datetime",
    "label": "Last Retry Attempted"
+  },
+  {
+   "fieldname": "customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Details"
+  },
+  {
+   "fieldname": "scheme_type",
+   "fieldtype": "Data",
+   "label": "Scheme Type",
+   "search_index": 1
+  },
+  {
+   "fieldname": "transaction_amount",
+   "fieldtype": "Int",
+   "label": "Transaction Amount",
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_ysjv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Long Text",
+   "label": "Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "scheme_code",
+   "fieldtype": "Data",
+   "label": "Scheme Code",
+   "search_index": 1
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "reqd": 1,
+   "search_index": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-15 17:10:43.757517",
+ "modified": "2026-06-19 23:18:46.358340",
  "modified_by": "Administrator",
  "module": "Banking Api",
  "name": "Share Application",
- "naming_rule": "Autoincrement",
  "owner": "Administrator",
  "permissions": [
   {

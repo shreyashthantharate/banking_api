@@ -111,18 +111,19 @@ function open_share_certificate_dialog(frm) {
 	const cert_data = {
 		share_certificate_no: frm.doc.name || "",
 		account_no: frm.doc.account_number || "",
-		name: "Lorem Ipsum Lorem Ipsum Lorem Ipsum",
-		address: "Near Avantai Bai Square, Kudwa, Gondia, Near Avantai Bai Square, Kudwa, Gondia, Near Avantai Bai Square, Kudwa, Gondia",
+		name: frm.doc.customer_name || "",
+		address: frm.doc.address || "",
 		number_of_share: "1",
 		from_no: "1",
-		to_no: "2",
+		to_no: "1",
 		rs: "10",
-		issued_date: today
+		// issued_date: frm.doc.cif_creation_date || today
+		issued_date: frappe.datetime.str_to_user(frm.doc.cif_creation_date)
 	};
 
 	const positions = {
 		certificate: {
-			share_certificate_no: { top: 170, left: 495, width: 150, font_size: 12 },
+			share_certificate_no: { top: 169, left: 495, width: 150, font_size: 12 },
 			account_no: { top: 180, left: 832, width: 120, font_size: 12 },
 			name: { top: 233, left: 454, width: 490, font_size: 12 },
 			address: { top: 261, left: 418, width: 540, font_size: 11 },

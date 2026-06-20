@@ -9,6 +9,34 @@ from frappe.model.document import Document
 
 
 class ShareApplication(Document):
+    def autoname(self):
+        from frappe import _
+        from frappe.model.naming import getseries
+
+        sol_id = str(self.sol_id or "").strip()
+
+        if not sol_id:
+            frappe.throw(_("SOL ID is mandatory for naming."))
+
+        if not sol_id.isdigit():
+            frappe.throw(_("SOL ID must contain digits only."))
+
+        if len(sol_id) != 4:
+            frappe.throw(_("SOL ID must be exactly 4 digits."))
+
+        prefix = f"{sol_id}01"
+
+        for _ in range(5):
+            sequence = getseries("Share Application-", 9)
+            new_name = f"{prefix}{sequence}"
+
+            if not frappe.db.exists("Share Application", new_name):
+                self.name = new_name
+                return
+
+        frappe.throw(
+            _("Unable to generate a unique Share Application ID. Please try again."))
+
     def validate(self):
         if self.docstatus == 1:
             if self.payment_status != "Success":

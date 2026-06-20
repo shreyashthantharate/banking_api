@@ -444,6 +444,38 @@ def get_share_tracker_rows(
     return result
 
 
+# @frappe.whitelist()
+# def get_share_application_by_cif(cif):
+#     if not cif:
+#         frappe.throw("CIF is required")
+
+#     doc = frappe.db.get_value(
+#         "Share Application",
+#         {"cif": cif},
+#         [
+#             "name",
+#             "sol_id",
+#             "cif",
+#             "account_number",
+#             "transaction_id",
+#             "payment_status",
+#             "insufficient_balance",
+#             "account_closed",
+#             "fund_transfer_date",
+#             "cif_creation_date",
+#             "account_opening_date",
+#             "error_log",
+#             "modified"
+#         ],
+#         as_dict=True
+#     )
+
+#     if doc:
+#         doc["sol_desc"] = get_sol_description(doc.get("sol_id"))
+
+#     return doc
+
+
 @frappe.whitelist()
 def get_share_application_by_cif(cif):
     if not cif:
@@ -461,9 +493,18 @@ def get_share_application_by_cif(cif):
             "payment_status",
             "insufficient_balance",
             "account_closed",
+            "account_frozen",
+            "account_not_found",
+            "retry_attempted",
+            "last_retry_attempted",
             "fund_transfer_date",
             "cif_creation_date",
             "account_opening_date",
+            "customer_name",
+            "address",
+            "scheme_type",
+            "scheme_code",
+            "transaction_amount",
             "error_log",
             "modified"
         ],
