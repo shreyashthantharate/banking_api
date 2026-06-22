@@ -300,6 +300,9 @@ def run_share_application_sync():
             "message": "Share Application Sync is disabled."
         }
 
+    # set sync days
+    sync_days = cint_safe(settings.sync_back_days, 30)
+
     conn = None
     cursor = None
     created_count = 0
@@ -310,7 +313,8 @@ def run_share_application_sync():
         conn = db_connection()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        query = get_share_application_query()
+        # sync_days = cint_safe(settings.sync_back_days, 30)
+        query = get_share_application_query(sync_days)
         cursor.execute(query)
 
         existing_cifs = set(
@@ -377,7 +381,8 @@ def run_share_application_sync():
                     doc.account_number = foracid
                     doc.sol_id = sol_id
                     doc.cif_creation_date = cif_opening_date
-                    doc.payment_status = "Pending"
+                    # doc.payment_status = "Pending"
+                    doc.status = "Pending"
 
                     doc.customer_name = row.get(
                         "customer_name") or row.get("acct_name") or ""
