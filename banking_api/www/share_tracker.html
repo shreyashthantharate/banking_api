@@ -3344,8 +3344,9 @@
                 address: doc.address || "—",
                 number_of_share: "1",
                 from_no: "1",
-                to_no: "2",
-                rs: doc.transaction_amount != null ? String(doc.transaction_amount) : "10",
+                to_no: "1",
+                // rs: doc.transaction_amount != null ? String(doc.transaction_amount) : "10",
+                rs: "10",
                 issued_date: doc.cif_creation_date ? formatDate(doc.cif_creation_date) : today
             };
         }

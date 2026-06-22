@@ -50,8 +50,123 @@ def cint_safe(value, default=0):
         return default
 
 
-def get_share_application_query(sync_days=None):
-    return """
+# def get_share_application_query(sync_days=None):
+#     return """
+#         SELECT *
+#         FROM (
+#             SELECT
+#                 g.cif_id AS cif_id,
+#                 a.relationshipopeningdate AS cif_opening_date,
+#                 g.foracid AS account_no,
+#                 g.acct_opn_date AS acct_opn_date,
+#                 g.sol_id AS sol_id,
+#                 s.sol_desc AS sol_desc,
+#                 g.acct_name AS acct_name,
+#                 g.clr_bal_amt AS clr_bal_amt,
+#                 g.schm_code AS schm_code,
+#                 g2.schm_desc AS schm_desc,
+#                 g.frez_code AS frez_code,
+#                 g.schm_type AS schm_type,
+#                 g.acct_cls_date AS acct_cls_date,
+#                 g.acct_cls_flg AS acct_cls_flg,
+#                 CASE
+#                     WHEN cif_htd.cif_id IS NOT NULL THEN 'DEDUCTED'
+#                     ELSE 'NOT DEDUCTED'
+#                 END AS remark,
+#                 CASE
+#                     WHEN g.clr_bal_amt >= 20 THEN 'SUFFICIENT BALANCE'
+#                     ELSE 'INSUFFICIENT BALANCE'
+#                 END AS balance_status,
+#                 CASE
+#                     WHEN acc_htd.acid IS NOT NULL THEN 'YES'
+#                     ELSE NULL
+#                 END AS share_fund_status,
+#                 ROW_NUMBER() OVER (
+#                     PARTITION BY g.cif_id
+#                     ORDER BY CASE g.schm_code
+#                         WHEN '1001' THEN 1
+#                         WHEN '1002' THEN 2
+#                         WHEN '1003' THEN 3
+#                         WHEN '1004' THEN 4
+#                         WHEN '1005' THEN 5
+#                         WHEN '1006' THEN 6
+#                         WHEN '1008' THEN 7
+#                         WHEN '1010' THEN 8
+#                         WHEN '1009' THEN 9
+#                         WHEN '1011' THEN 10
+#                         WHEN '1012' THEN 11
+#                         WHEN '1013' THEN 12
+#                         WHEN '1101' THEN 13
+#                         WHEN '1102' THEN 14
+#                         WHEN '1103' THEN 15
+#                         WHEN '1104' THEN 16
+#                         WHEN '1117' THEN 17
+#                         ELSE 999
+#                     END,
+#                     g.foracid
+#                 ) AS rn
+#             FROM tbaadm.gam g
+#             JOIN tbaadm.sol s ON g.sol_id = s.sol_id
+#             JOIN tbaadm.gsp g2 ON g.schm_code = g2.schm_code
+
+#             LEFT JOIN LATERAL (
+#                 SELECT orgkey, relationshipopeningdate
+#                 FROM crmuser.accounts a
+#                 WHERE a.orgkey = g.cif_id
+#                   AND a.relationshipopeningdate >= CURRENT_DATE - INTERVAL '30 days'
+#                   AND a.relationshipopeningdate <= CURRENT_DATE
+#                 ORDER BY a.relationshipopeningdate DESC
+#                 LIMIT 1
+#             ) a ON TRUE
+
+#             LEFT JOIN (
+#                 SELECT DISTINCT g.cif_id
+#                 FROM tbaadm.htd h
+#                 JOIN tbaadm.gam g ON h.acid = g.acid
+#                 WHERE h.tran_particular = 'SHARE FUND DEBITED'
+#                   AND h.part_tran_type = 'D'
+#                   AND g.cif_id IN (
+#                       SELECT DISTINCT g2.cif_id
+#                       FROM tbaadm.gam g2
+#                       WHERE g2.schm_code IN (
+#                           '1001','1002','1003','1004','1005','1006','1008','1010',
+#                           '1009','1011','1012','1013','1101','1102','1103','1104','1117'
+#                       )
+#                         AND g2.entity_cre_flg = 'Y'
+#                         AND g2.del_flg = 'N'
+#                         AND g2.acct_cls_flg = 'N'
+#                   )
+#             ) cif_htd ON g.cif_id = cif_htd.cif_id
+
+#             LEFT JOIN (
+#                 SELECT DISTINCT h.acid
+#                 FROM tbaadm.htd h
+#                 WHERE h.tran_particular = 'SHARE FUND DEBITED'
+#                   AND h.part_tran_type = 'D'
+#             ) acc_htd ON g.acid = acc_htd.acid
+
+#             WHERE g.schm_code IN (
+#                     '1001','1002','1003','1004','1005','1006','1008','1010',
+#                     '1009','1011','1012','1013','1101','1102','1103','1104','1117'
+#                   )
+#               AND g.entity_cre_flg = 'Y'
+#               AND g.del_flg = 'N'
+#               AND g.acct_cls_flg = 'N'
+#               AND g.clr_bal_amt >= 20
+#               AND cif_htd.cif_id IS NULL
+#               AND a.relationshipopeningdate IS NOT NULL
+#         ) AS final_data
+#         WHERE rn = 1
+#     """
+
+
+def get_share_application_query(sync_days=30):
+    sync_days = cint_safe(sync_days, 30)
+
+    if sync_days <= 0:
+        sync_days = 30
+
+    return f"""
         SELECT *
         FROM (
             SELECT 
@@ -69,6 +184,10 @@ def get_share_application_query(sync_days=None):
                 g.schm_type AS schm_type,
                 g.acct_cls_date AS acct_cls_date,
                 g.acct_cls_flg AS acct_cls_flg,
+                adr.name AS customer_name,
+                adr.address_line1 AS address_line1,
+                adr.address_line2 AS address_line2,
+                concat_ws(', ', adr.address_line1, adr.address_line2) AS address,
                 CASE
                     WHEN cif_htd.cif_id IS NOT NULL THEN 'DEDUCTED'
                     ELSE 'NOT DEDUCTED'
@@ -113,50 +232,62 @@ def get_share_application_query(sync_days=None):
                 SELECT orgkey, relationshipopeningdate
                 FROM crmuser.accounts a
                 WHERE a.orgkey = g.cif_id
-                  AND a.relationshipopeningdate IS NOT NULL
-                  AND a.relationshipopeningdate <= DATE '2026-06-04'
+                    AND a.relationshipopeningdate >= CURRENT_DATE - make_interval(days => {sync_days})
+                    AND a.relationshipopeningdate <= CURRENT_DATE
                 ORDER BY a.relationshipopeningdate DESC
                 LIMIT 1
             ) a ON TRUE
+
+            LEFT JOIN LATERAL (
+                SELECT
+                    adr.orgkey,
+                    adr.name,
+                    adr.address_line1,
+                    adr.address_line2
+                FROM crmuser.address adr
+                WHERE adr.orgkey = g.cif_id
+                ORDER BY adr.name NULLS LAST
+                LIMIT 1
+            ) adr ON TRUE
 
             LEFT JOIN (
                 SELECT DISTINCT g.cif_id
                 FROM tbaadm.htd h
                 JOIN tbaadm.gam g ON h.acid = g.acid
                 WHERE h.tran_particular = 'SHARE FUND DEBITED'
-                  AND h.part_tran_type = 'D'
-                  AND g.cif_id IN (
-                      SELECT DISTINCT g2.cif_id
-                      FROM tbaadm.gam g2
-                      WHERE g2.schm_code IN (
-                          '1001','1002','1003','1004','1005','1006','1008','1010',
-                          '1009','1011','1012','1013','1101','1102','1103','1104','1117'
-                      )
+                AND h.part_tran_type = 'D'
+                AND g.cif_id IN (
+                    SELECT DISTINCT g2.cif_id
+                    FROM tbaadm.gam g2
+                    WHERE g2.schm_code IN (
+                        '1001','1002','1003','1004','1005','1006','1008','1010',
+                        '1009','1011','1012','1013','1101','1102','1103','1104','1117'
+                    )
                         AND g2.entity_cre_flg = 'Y'
                         AND g2.del_flg = 'N'
                         AND g2.acct_cls_flg = 'N'
-                  )
+                )
             ) cif_htd ON g.cif_id = cif_htd.cif_id
 
             LEFT JOIN (
                 SELECT DISTINCT h.acid
                 FROM tbaadm.htd h
                 WHERE h.tran_particular = 'SHARE FUND DEBITED'
-                  AND h.part_tran_type = 'D'
+                AND h.part_tran_type = 'D'
             ) acc_htd ON g.acid = acc_htd.acid
 
             WHERE g.schm_code IN (
                     '1001','1002','1003','1004','1005','1006','1008','1010',
                     '1009','1011','1012','1013','1101','1102','1103','1104','1117'
-                  )
-              AND g.entity_cre_flg = 'Y'
-              AND g.del_flg = 'N'
-              AND g.acct_cls_flg = 'N'
-              AND g.clr_bal_amt >= 20
-              AND cif_htd.cif_id IS NULL
-              AND a.relationshipopeningdate IS NOT NULL
+                )
+            AND g.entity_cre_flg = 'Y'
+            AND g.del_flg = 'N'
+            AND g.acct_cls_flg = 'N'
+            AND g.clr_bal_amt >= 20
+            AND cif_htd.cif_id IS NULL
+            AND a.relationshipopeningdate IS NOT NULL
         ) AS final_data
-        WHERE rn = 1
+        WHERE rn = 1;
     """
 
 
@@ -226,13 +357,36 @@ def run_share_application_sync():
                     )
                     continue
 
+                # try:
+                #     doc = frappe.new_doc("Share Application")
+                #     doc.cif = cif_id
+                #     doc.account_number = foracid
+                #     doc.sol_id = sol_id
+                #     doc.cif_creation_date = cif_opening_date
+                #     doc.status = "Pending"
+                #     doc.insert(ignore_permissions=True)
+
+                #     frappe.db.commit()
+
+                #     existing_cifs.add(cif_id_str)
+                #     created_count += 1
+
                 try:
                     doc = frappe.new_doc("Share Application")
                     doc.cif = cif_id
                     doc.account_number = foracid
                     doc.sol_id = sol_id
                     doc.cif_creation_date = cif_opening_date
-                    doc.status = "Pending"
+                    doc.payment_status = "Pending"
+
+                    doc.customer_name = row.get(
+                        "customer_name") or row.get("acct_name") or ""
+                    doc.address = row.get("address") or ""
+                    doc.scheme_code = row.get("schm_code") or ""
+                    doc.scheme_type = row.get("schm_type") or ""
+                    doc.account_opening_date = row.get("acct_opn_date")
+                    # doc.transaction_amount = row.get("clr_bal_amt") or 0
+
                     doc.insert(ignore_permissions=True)
 
                     frappe.db.commit()
@@ -719,7 +873,8 @@ def pay_now_share_application(entry_name):
                     "error_log": "",
                     "account_closed": 0,
                     "insufficient_balance": 0,
-                    "account_frozen": 0
+                    "account_frozen": 0,
+                    "transaction_amount": total_debit_amount
                 },
                 update_modified=True
             )
