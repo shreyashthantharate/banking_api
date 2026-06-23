@@ -1354,24 +1354,451 @@
                 animation: none !important;
             }
         }
+
+        /* ─── EXPORT MODAL ─── */
+        .export-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 700;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(0, 0, 0, 0.68);
+            backdrop-filter: blur(10px);
+        }
+
+        .export-modal-overlay.show {
+            display: flex;
+        }
+
+        .export-modal {
+            width: min(520px, 100%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-md);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+            overflow: hidden;
+        }
+
+        .export-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+
+        .export-modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .export-modal-close {
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .export-modal-close:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .export-modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .export-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 10px;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .export-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-md);
+            border-radius: var(--radius-lg);
+            background: var(--bg-surface);
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .export-option:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+        }
+
+        .export-option input[type="radio"] {
+            margin-top: 2px;
+            accent-color: var(--accent);
+        }
+
+        .export-option-text {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .export-option-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .export-option-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .export-date-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .export-field label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .export-field input[type="date"] {
+            width: 100%;
+            height: 38px;
+            padding: 0 12px;
+            font-size: 13px;
+            font-family: var(--font);
+            color: var(--text-primary);
+            background: var(--bg-input);
+            border: 1px solid var(--border-md);
+            border-radius: var(--radius-md);
+            outline: none;
+        }
+
+        .export-field input[type="date"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .export-modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+
+        .export-cancel-btn,
+        .export-download-btn {
+            height: 38px;
+            padding: 0 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-family: var(--font);
+            cursor: pointer;
+        }
+
+        .export-cancel-btn {
+            border: 1px solid var(--border-md);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .export-cancel-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .export-download-btn {
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .export-download-btn:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        @media (max-width: 640px) {
+
+            .export-options,
+            .export-date-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pill-frozen {
+            background: rgba(168, 85, 247, 0.12);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .pill-frozen::before {
+            background: #a855f7;
+        }
+
+        .pill-not-found {
+            background: rgba(244, 63, 94, 0.12);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .pill-not-found::before {
+            background: #f43f5e;
+        }
+
+        .tab[data-tab="frozen"] .tab-count {
+            background: rgba(168, 85, 247, 0.12);
+            color: #a855f7;
+        }
+
+        .tab[data-tab="not_found"] .tab-count {
+            background: rgba(244, 63, 94, 0.12);
+            color: #f43f5e;
+        }
+
+
+        .pill-frozen {
+            background: rgba(168, 85, 247, 0.12);
+            color: #a855f7;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .pill-frozen::before {
+            background: #a855f7;
+        }
+
+        .pill-not-found {
+            background: rgba(244, 63, 94, 0.12);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .pill-not-found::before {
+            background: #f43f5e;
+        }
+
+        .tab[data-tab="frozen"] .tab-count {
+            background: rgba(168, 85, 247, 0.12);
+            color: #a855f7;
+        }
+
+        .tab[data-tab="not_found"] .tab-count {
+            background: rgba(244, 63, 94, 0.12);
+            color: #f43f5e;
+        }
+
+        .access-denied-shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at top left, rgba(108, 99, 255, 0.10), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(239, 68, 68, 0.08), transparent 28%),
+                var(--bg-app);
+        }
+
+        .access-denied-card {
+            width: min(520px, 100%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-md);
+            border-radius: 24px;
+            padding: 36px 28px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .access-denied-image {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin: 0 auto 18px;
+            opacity: 0.95;
+        }
+
+        .access-denied-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .access-denied-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: 420px;
+            margin: 0 auto 22px;
+        }
+
+        .access-denied-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 16px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid var(--accent);
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .access-denied-btn:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .denied-wrap {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 16px;
+        }
+
+        .denied-card {
+            width: 100%;
+            max-width: 520px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-md);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            padding: 32px 28px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .denied-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #8b83ff);
+        }
+
+        .denied-icon {
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: rgba(108, 99, 255, 0.12);
+            border: 1px solid rgba(108, 99, 255, 0.2);
+            color: var(--accent);
+            box-shadow: 0 0 0 10px rgba(108, 99, 255, 0.04);
+        }
+
+        .denied-title {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .denied-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 38ch;
+            margin: 0 auto 20px;
+        }
+
+        .denied-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 12.5px;
+        }
+
+        .denied-actions {
+            margin-top: 22px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .denied-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-md);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.15s ease;
+        }
+
+        .denied-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+        }
+
+        .denied-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .denied-btn.primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
     </style>
 </head>
 
 <body>
+    {% if has_share_tracker_access %}
     <div class="shell">
 
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="topbar-left">
-                <!-- <a href="https://mysahayog.com/app/sahayog-home" class="logo">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="10 2 2 7 2 17 10 18 18 17 18 7" />
-                        <line x1="10" y1="2" x2="10" y2="18" />
-                        <line x1="2" y1="12" x2="18" y2="12" />
-                    </svg>
-                    Acme Corp
-                </a> -->
                 <a href="https://mysahayog.com/app/sahayog-home" class="logo">
                     <img src="/assets/banking_api/images/sahayog_logo_2025.png" alt="Sahayog Logo" class="logo-img">
                 </a>
@@ -1383,13 +1810,6 @@
                 </nav>
             </div>
             <div class="topbar-right">
-                <!-- <button class="icon-btn" title="Notifications" aria-label="Notifications">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                </button> -->
                 <div class="avatar" id="topbarAvatar">{{ user_avatar or "U" }}</div>
                 <div class="user-meta">
                     <div class="user-name" id="topbarUserName">{{ user_display_name or "Unknown User" }}</div>
@@ -1408,7 +1828,7 @@
                     <p class="page-sub">Monitor and manage all fund transaction statuses</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn" onclick="exportCSV()">
+                    <!-- <button class="btn" onclick="exportCSV()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -1416,8 +1836,17 @@
                             <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                         Export
+                    </button> -->
+                    <button class="btn" onclick="openExportModal()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Export
                     </button>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" style="display: none;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="18" cy="5" r="3" />
@@ -1495,16 +1924,7 @@
             <div class="table-card">
 
                 <!-- TAB BAR -->
-                <div class="tab-bar">
-                    <!-- <button class="tab active" data-tab="pending" onclick="switchTab('pending')">
-                        Pending <span class="tab-count" id="tc-pending">12</span>
-                    </button>
-                    <button class="tab" data-tab="insuf" onclick="switchTab('insuf')">
-                        Insufficient balance <span class="tab-count" id="tc-insuf">7</span>
-                    </button>
-                    <button class="tab" data-tab="closed" onclick="switchTab('closed')">
-                        Account closed <span class="tab-count" id="tc-closed">5</span>
-                    </button> -->
+                <!-- <div class="tab-bar">
                     <button class="tab active" data-tab="all">All</button>
                     <button class="tab" data-tab="pending">Pending <span class="tab-count"
                             id="tc-pending">0</span></button>
@@ -1514,6 +1934,27 @@
                             id="tc-insuf">0</span></button>
                     <button class="tab" data-tab="closed">Closed account <span class="tab-count"
                             id="tc-closed">0</span></button>
+                </div> -->
+                <div class="tab-bar">
+                    <button class="tab active" data-tab="all">All</button>
+                    <button class="tab" data-tab="pending">Pending <span class="tab-count"
+                            id="tc-pending">0</span></button>
+                    <button class="tab" data-tab="success">Success <span class="tab-count"
+                            id="tc-success">0</span></button>
+                    <button class="tab" data-tab="insuf">Insufficient balance <span class="tab-count"
+                            id="tc-insuf">0</span></button>
+                    <button class="tab" data-tab="closed">Closed account <span class="tab-count"
+                            id="tc-closed">0</span></button>
+                    <!-- <button class="tab" data-tab="frozen">Account Frozen <span class="tab-count"
+                            id="tc-frozen">0</span></button>
+                    <button class="tab" data-tab="not_found">Account Not Found <span class="tab-count"
+                            id="tc-not-found">0</span></button> -->
+                    <button class="tab" data-tab="frozen">
+                        Account frozen <span class="tab-count" id="tc-frozen">0</span>
+                    </button>
+                    <button class="tab" data-tab="not_found">
+                        Account not found <span class="tab-count" id="tc-not-found">0</span>
+                    </button>
                 </div>
 
                 <!-- TOOLBAR -->
@@ -1578,16 +2019,7 @@
                         </div>
                     </div>
 
-                    <!-- <button class="toolbar-btn" onclick="toggleDateFilter()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        Date range
-                    </button> -->
+                    <!-- DATE FILTER -->
                     <div class="filter-wrap" id="dateFilterWrap">
                         <button class="toolbar-btn" id="dateFilterBtn" onclick="toggleDateFilter()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1643,12 +2075,21 @@
 
                     <div class="toolbar-right">
                         <span style="font-size:12px;color:var(--text-tertiary)" id="selectedCount"></span>
-                        <button class="toolbar-btn" onclick="exportCSV()">
+                        <!-- <button class="toolbar-btn" onclick="exportCSV()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                 <polyline points="7 10 12 15 17 10" />
                                 <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Export CSV
+                        </button> -->
+                        <button class="toolbar-btn" onclick="exportFilteredCSV()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
                             Export CSV
                         </button>
@@ -1708,6 +2149,78 @@
             </div>
 
         </main>
+    </div>
+    <div id="exportModalOverlay" class="export-modal-overlay" aria-hidden="true">
+        <div class="export-modal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+            <div class="export-modal-head">
+                <div class="export-modal-title" id="exportModalTitle">Download report</div>
+                <button class="export-modal-close" onclick="closeExportModal()" aria-label="Close export modal">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="export-modal-body">
+                <div>
+                    <div class="export-section-title">Which report</div>
+                    <div class="export-options">
+                        <label class="export-option">
+                            <input type="radio" name="exportReportType" value="all" checked>
+                            <div class="export-option-text">
+                                <div class="export-option-title">Consolidated</div>
+                                <div class="export-option-sub">All records</div>
+                            </div>
+                        </label>
+
+                        <label class="export-option">
+                            <input type="radio" name="exportReportType" value="success">
+                            <div class="export-option-text">
+                                <div class="export-option-title">Success</div>
+                                <div class="export-option-sub">Only success records</div>
+                            </div>
+                        </label>
+
+                        <label class="export-option">
+                            <input type="radio" name="exportReportType" value="failed">
+                            <div class="export-option-text">
+                                <div class="export-option-title">Failed</div>
+                                <div class="export-option-sub">Only failed records</div>
+                            </div>
+                        </label>
+
+                        <label class="export-option">
+                            <input type="radio" name="exportReportType" value="pending">
+                            <div class="export-option-text">
+                                <div class="export-option-title">Pending</div>
+                                <div class="export-option-sub">Only pending records</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="export-section-title">Date range</div>
+                    <div class="export-date-grid">
+                        <div class="export-field">
+                            <label for="exportFromDate">From date</label>
+                            <input type="date" id="exportFromDate">
+                        </div>
+                        <div class="export-field">
+                            <label for="exportToDate">To date</label>
+                            <input type="date" id="exportToDate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-modal-foot">
+                <button class="export-cancel-btn" onclick="closeExportModal()">Cancel</button>
+                <button class="export-download-btn" onclick="downloadExportFromModal()">Download CSV</button>
+            </div>
+        </div>
     </div>
     <div id="exportLoader" class="export-loader-overlay" aria-hidden="true">
         <div class="export-loader-card">
@@ -1796,15 +2309,24 @@
             return num.toLocaleString("en-US");
         }
 
+        // function getStatusKey(row) {
+        //     if (String(row.payment_status || "").trim() === "Success") return "success";
+        //     if (cintLike(row.insufficient_balance) === 1) return "insuf";
+        //     if (cintLike(row.account_closed) === 1) return "closed";
+        //     if (String(row.payment_status || "").trim() === "Pending") return "pending";
+        //     if (String(row.payment_status || "").trim() === "Failed") return "failed";
+        //     return "unknown";
+        // }
         function getStatusKey(row) {
             if (String(row.payment_status || "").trim() === "Success") return "success";
             if (cintLike(row.insufficient_balance) === 1) return "insuf";
             if (cintLike(row.account_closed) === 1) return "closed";
+            if (cintLike(row.account_frozen) === 1) return "frozen";
+            if (cintLike(row.account_not_found) === 1) return "not_found";
             if (String(row.payment_status || "").trim() === "Pending") return "pending";
             if (String(row.payment_status || "").trim() === "Failed") return "failed";
             return "unknown";
         }
-
 
         function pad2(value) {
             return String(value).padStart(2, "0");
@@ -1854,14 +2376,40 @@
             return `${pad2(dt.getDate())}-${pad2(dt.getMonth() + 1)}-${dt.getFullYear()}`;
         }
 
+        // function getStatusLabel(row) {
+        //     if (String(row.payment_status || "").trim() === "Success") return "Success";
+        //     if (cintLike(row.insufficient_balance) === 1) return "Insufficient balance";
+        //     if (cintLike(row.account_closed) === 1) return "Account closed";
+        //     if (String(row.payment_status || "").trim() === "Pending") return "Pending";
+        //     if (String(row.payment_status || "").trim() === "Failed") return "Failed";
+        //     return row.payment_status || "Unknown";
+        // }
         function getStatusLabel(row) {
             if (String(row.payment_status || "").trim() === "Success") return "Success";
             if (cintLike(row.insufficient_balance) === 1) return "Insufficient balance";
             if (cintLike(row.account_closed) === 1) return "Account closed";
+            if (cintLike(row.account_frozen) === 1) return "Account frozen";
+            if (cintLike(row.account_not_found) === 1) return "Account not found";
             if (String(row.payment_status || "").trim() === "Pending") return "Pending";
             if (String(row.payment_status || "").trim() === "Failed") return "Failed";
             return row.payment_status || "Unknown";
         }
+
+        // function pillHTML(row) {
+        //     const key = getStatusKey(row);
+        //     const label = getStatusLabel(row);
+
+        //     const clsMap = {
+        //         pending: "pill-pending",
+        //         insuf: "pill-insuf",
+        //         closed: "pill-closed",
+        //         success: "pill-success",
+        //         failed: "pill-insuf",
+        //         unknown: "pill-closed"
+        //     };
+
+        //     return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
+        // }
 
         function pillHTML(row) {
             const key = getStatusKey(row);
@@ -1871,6 +2419,8 @@
                 pending: "pill-pending",
                 insuf: "pill-insuf",
                 closed: "pill-closed",
+                frozen: "pill-frozen",
+                not_found: "pill-not-found",
                 success: "pill-success",
                 failed: "pill-insuf",
                 unknown: "pill-closed"
@@ -1879,6 +2429,24 @@
             return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
         }
 
+        // function normalizeRecord(row) {
+        //     return {
+        //         name: row.name || "",
+        //         sol_id: row.sol_id || "",
+        //         sol_desc: row.sol_desc || "",
+        //         cif: row.cif != null ? String(row.cif) : "",
+        //         account_number: row.account_number != null ? String(row.account_number) : "",
+        //         transaction_id: row.transaction_id || "",
+        //         payment_status: row.payment_status || "",
+        //         insufficient_balance: cintLike(row.insufficient_balance),
+        //         account_closed: cintLike(row.account_closed),
+        //         fund_transfer_date: row.fund_transfer_date || "",
+        //         cif_creation_date: row.cif_creation_date || "",
+        //         account_opening_date: row.account_opening_date || "",
+        //         error_log: row.error_log || "",
+        //         modified: row.modified || ""
+        //     };
+        // }
         function normalizeRecord(row) {
             return {
                 name: row.name || "",
@@ -1890,6 +2458,8 @@
                 payment_status: row.payment_status || "",
                 insufficient_balance: cintLike(row.insufficient_balance),
                 account_closed: cintLike(row.account_closed),
+                account_frozen: cintLike(row.account_frozen),
+                account_not_found: cintLike(row.account_not_found),
                 fund_transfer_date: row.fund_transfer_date || "",
                 cif_creation_date: row.cif_creation_date || "",
                 account_opening_date: row.account_opening_date || "",
@@ -1911,28 +2481,6 @@
         function getSortOrder() {
             return sortDir === -1 ? "desc" : "asc";
         }
-
-        // function getCacheKey() {
-        //     return JSON.stringify({
-        //         tab: currentTab,
-        //         page: currentPage,
-        //         q: searchQ,
-        //         sol_ids: [...selectedSolIds].sort(),
-        //         sort_by: getSortBy(),
-        //         sort_order: getSortOrder()
-        //     });
-        // }
-
-        // function getCacheKeyForPage(pageNo) {
-        //     return JSON.stringify({
-        //         tab: currentTab,
-        //         page: pageNo,
-        //         q: searchQ,
-        //         sol_ids: [...selectedSolIds].sort(),
-        //         sort_by: getSortBy(),
-        //         sort_order: getSortOrder()
-        //     });
-        // }
 
         function getCacheKey() {
             return JSON.stringify({
@@ -1959,27 +2507,6 @@
                 sort_order: getSortOrder()
             });
         }
-
-
-
-
-
-        // async function fetchRowsForPage(pageNo) {
-        //     const message = await apiCall("banking_api.www.share_tracker.get_share_tracker_rows", {
-        //         view: currentTab,
-        //         page: pageNo,
-        //         page_length: PER_PAGE,
-        //         search: searchQ || null,
-        //         sol_ids: [...selectedSolIds],
-        //         sort_by: getSortBy(),
-        //         sort_order: getSortOrder()
-        //     });
-
-        //     const rows = (message.rows || []).map(normalizeRecord);
-        //     const total = cintLike(message.total);
-
-        //     return { rows, total };
-        // }
 
         async function fetchRowsForPage(pageNo) {
             const message = await apiCall("banking_api.www.share_tracker.get_share_tracker_rows", {
@@ -2075,6 +2602,30 @@
             renderMetrics(data);
         }
 
+        // function renderMetrics(data) {
+        //     const totalEl = document.getElementById("m-total");
+        //     const pendingEl = document.getElementById("m-pending");
+        //     const insufEl = document.getElementById("m-insuf");
+        //     const closedEl = document.getElementById("m-closed");
+        //     const successEl = document.getElementById("m-success");
+
+        //     if (totalEl) totalEl.textContent = formatNumber(data.total);
+        //     if (pendingEl) pendingEl.textContent = formatNumber(data.pending);
+        //     if (insufEl) insufEl.textContent = formatNumber(data.insuf);
+        //     if (closedEl) closedEl.textContent = formatNumber(data.closed);
+        //     if (successEl) successEl.textContent = formatNumber(data.success);
+
+        //     const tcPending = document.getElementById("tc-pending");
+        //     const tcInsuf = document.getElementById("tc-insuf");
+        //     const tcClosed = document.getElementById("tc-closed");
+        //     const tcSuccess = document.getElementById("tc-success");
+
+        //     if (tcPending) tcPending.textContent = formatNumber(data.pending);
+        //     if (tcInsuf) tcInsuf.textContent = formatNumber(data.insuf);
+        //     if (tcClosed) tcClosed.textContent = formatNumber(data.closed);
+        //     if (tcSuccess) tcSuccess.textContent = formatNumber(data.success);
+        // }
+
         function renderMetrics(data) {
             const totalEl = document.getElementById("m-total");
             const pendingEl = document.getElementById("m-pending");
@@ -2082,29 +2633,25 @@
             const closedEl = document.getElementById("m-closed");
             const successEl = document.getElementById("m-success");
 
-            if (totalEl) totalEl.textContent = formatNumber(data.total);
-            if (pendingEl) pendingEl.textContent = formatNumber(data.pending);
-            if (insufEl) insufEl.textContent = formatNumber(data.insuf);
-            if (closedEl) closedEl.textContent = formatNumber(data.closed);
-            if (successEl) successEl.textContent = formatNumber(data.success);
-
-            // const tcPending = document.getElementById("tc-pending");
-            // const tcInsuf = document.getElementById("tc-insuf");
-            // const tcClosed = document.getElementById("tc-closed");
-
-            // if (tcPending) tcPending.textContent = formatNumber(data.pending);
-            // if (tcInsuf) tcInsuf.textContent = formatNumber(data.insuf);
-            // if (tcClosed) tcClosed.textContent = formatNumber(data.closed);
+            if (totalEl) totalEl.textContent = formatNumber(data.total || 0);
+            if (pendingEl) pendingEl.textContent = formatNumber(data.pending || 0);
+            if (insufEl) insufEl.textContent = formatNumber(data.insuf || 0);
+            if (closedEl) closedEl.textContent = formatNumber(data.closed || 0);
+            if (successEl) successEl.textContent = formatNumber(data.success || 0);
 
             const tcPending = document.getElementById("tc-pending");
             const tcInsuf = document.getElementById("tc-insuf");
             const tcClosed = document.getElementById("tc-closed");
             const tcSuccess = document.getElementById("tc-success");
+            const tcFrozen = document.getElementById("tc-frozen");
+            const tcNotFound = document.getElementById("tc-not-found");
 
-            if (tcPending) tcPending.textContent = formatNumber(data.pending);
-            if (tcInsuf) tcInsuf.textContent = formatNumber(data.insuf);
-            if (tcClosed) tcClosed.textContent = formatNumber(data.closed);
-            if (tcSuccess) tcSuccess.textContent = formatNumber(data.success);
+            if (tcPending) tcPending.textContent = formatNumber(data.pending || 0);
+            if (tcInsuf) tcInsuf.textContent = formatNumber(data.insuf || 0);
+            if (tcClosed) tcClosed.textContent = formatNumber(data.closed || 0);
+            if (tcSuccess) tcSuccess.textContent = formatNumber(data.success || 0);
+            if (tcFrozen) tcFrozen.textContent = formatNumber(data.frozen || 0);
+            if (tcNotFound) tcNotFound.textContent = formatNumber(data.not_found || 0);
         }
 
         async function loadSolIds(force = false) {
@@ -2127,90 +2674,6 @@
             currentSolIds = Array.isArray(solIds) ? solIds : [];
             pageCache.set(cacheKey, currentSolIds);
         }
-
-        // async function loadRows(force = false) {
-        //     const cacheKey = getCacheKey();
-        //     const empty = document.getElementById("emptyState");
-        //     const tbody = document.getElementById("tableBody");
-
-        //     if (!force && pageCache.has(cacheKey)) {
-        //         const cached = pageCache.get(cacheKey);
-        //         currentRows = cached.rows || [];
-        //         currentTotal = cached.total || 0;
-        //         renderTable();
-        //     }
-
-        //     if (empty && !pageCache.has(cacheKey)) {
-        //         empty.style.display = "block";
-        //         empty.innerHTML = `
-        //         <div class="empty-icon">⏳</div>
-        //         <div class="empty-title">Loading records...</div>
-        //         <div class="empty-sub">Please wait</div>
-        //     `;
-        //     }
-        //     if (tbody && !pageCache.has(cacheKey)) tbody.innerHTML = "";
-
-        //     const message = await apiCall("banking_api.www.share_tracker.get_share_tracker_rows", {
-        //         view: currentTab,
-        //         page: currentPage,
-        //         page_length: PER_PAGE,
-        //         search: searchQ || null,
-        //         sol_ids: [...selectedSolIds],
-        //         sort_by: getSortBy(),
-        //         sort_order: getSortOrder()
-        //     });
-
-        //     currentRows = (message.rows || []).map(normalizeRecord);
-        //     currentTotal = cintLike(message.total);
-
-        //     pageCache.set(cacheKey, {
-        //         rows: currentRows,
-        //         total: currentTotal
-        //     });
-
-        //     renderTable();
-        // }
-
-
-        // new working version
-        // async function loadRows(force = false) {
-        //     const cacheKey = getCacheKey();
-        //     const empty = document.getElementById("emptyState");
-        //     const tbody = document.getElementById("tableBody");
-
-        //     if (!force && pageCache.has(cacheKey)) {
-        //         const cached = pageCache.get(cacheKey);
-        //         currentRows = cached.rows;
-        //         currentTotal = cached.total;
-        //         currentSolIds = cached.sol_ids || [];
-        //         renderTable();
-        //         prefetchAdjacentPages();
-        //         return;
-        //     }
-
-        //     if (empty) {
-        //         empty.style.display = "block";
-        //         empty.innerHTML = `
-        //     <div class="empty-icon">⏳</div>
-        //     <div class="empty-title">Loading records...</div>
-        //     <div class="empty-sub">Please wait</div>
-        // `;
-        //     }
-
-        //     if (tbody) tbody.innerHTML = "";
-
-        //     const data = await fetchRowsForPage(currentPage);
-
-        //     currentRows = data.rows;
-        //     currentTotal = data.total;
-        //     currentSolIds = data.sol_ids || [];
-
-        //     pageCache.set(cacheKey, data);
-
-        //     renderTable();
-        //     prefetchAdjacentPages();
-        // }
-
 
         async function loadRows(force = false) {
             const cacheKey = getCacheKey();
@@ -2249,6 +2712,21 @@
         }
 
 
+        // function updateCardSelection() {
+        //     document.querySelectorAll(".metric").forEach(el => el.classList.remove("active-card"));
+
+        //     const selectorMap = {
+        //         all: ".metric.total",
+        //         pending: ".metric.pending-m",
+        //         insuf: ".metric.insuf-m",
+        //         closed: ".metric.closed-m",
+        //         success: ".metric.success-m"
+        //     };
+
+        //     const active = document.querySelector(selectorMap[currentTab]);
+        //     if (active) active.classList.add("active-card");
+        // }
+
         function updateCardSelection() {
             document.querySelectorAll(".metric").forEach(el => el.classList.remove("active-card"));
 
@@ -2257,10 +2735,15 @@
                 pending: ".metric.pending-m",
                 insuf: ".metric.insuf-m",
                 closed: ".metric.closed-m",
-                success: ".metric.success-m"
+                success: ".metric.success-m",
+                frozen: null,
+                not_found: null
             };
 
-            const active = document.querySelector(selectorMap[currentTab]);
+            const selector = selectorMap[currentTab];
+            if (!selector) return;
+
+            const active = document.querySelector(selector);
             if (active) active.classList.add("active-card");
         }
 
@@ -2323,34 +2806,6 @@
             const index = map[sortCol];
             if (ths && ths[index]) ths[index].classList.add("sorted");
         }
-
-        // function renderPagination(totalPages) {
-        //     const container = document.getElementById("pgBtns");
-        //     if (!container) return;
-
-        //     let html = `
-        //     <button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>
-        //         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        //         Prev
-        //     </button>
-        // `;
-
-        //     const pages = getPaginationPages(currentPage, totalPages);
-        //     pages.forEach(p => {
-        //         if (p === "...") html += `<span class="pg-dots">...</span>`;
-        //         else html += `<button class="pg-btn ${p === currentPage ? "active" : ""}" onclick="goPage(${p})">${p}</button>`;
-        //     });
-
-        //     html += `
-        //     <button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>
-        //         Next
-        //         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        //     </button>
-        // `;
-
-        //     container.innerHTML = html;
-        // }
-
 
         function renderPagination(totalPages) {
             const container = document.getElementById("pgBtns");
@@ -2712,12 +3167,6 @@
             }
         }
 
-        // function toggleDateFilter() {
-        //     if (window.frappe && frappe.show_alert) {
-        //         frappe.show_alert({ message: __("Date range filter not enabled yet"), indicator: "orange" });
-        //     }
-        // }
-
         function updateDateFilterUI() {
             const btn = document.getElementById("dateFilterBtn");
             const badge = document.getElementById("dateFilterBadge");
@@ -2733,10 +3182,6 @@
             }
 
             if (text) {
-                // if (fromDate && toDate) text.textContent = `${fromDate} to ${toDate}`;
-                // else if (fromDate) text.textContent = `From ${fromDate}`;
-                // else if (toDate) text.textContent = `Up to ${toDate}`;
-                // else text.textContent = "No date selected";
                 if (fromDate && toDate) text.textContent = `${formatDate(fromDate)} to ${formatDate(toDate)}`;
                 else if (fromDate) text.textContent = `From ${formatDate(fromDate)}`;
                 else if (toDate) text.textContent = `Up to ${formatDate(toDate)}`;
@@ -2879,98 +3324,149 @@
             exportLoaderInterval = null;
         }
 
-        async function exportCSV() {
+        // async function exportCSV() {
+        //     try {
+        //         setExportButtonLoading(true);
+        //         showExportLoader("Building consolidated report and preparing download…");
+        //         const rows = await apiCall("banking_api.www.share_tracker.get_share_tracker_export_rows", {
+        //             search: searchQ ? searchQ : null,
+        //             sol_ids: selectedSolIds.size ? [...selectedSolIds] : null,
+        //             from_date: fromDate || null,
+        //             to_date: toDate || null,
+        //             sort_by: getSortBy(),
+        //             sort_order: getSortOrder()
+        //         });
+
+        //         const exportCount = Array.isArray(rows) ? rows.length : 0;
+        //         showExportLoader(`Finalizing CSV for ${formatNumber(exportCount)} records…`);
+        //         const headers = [
+        //             "SOL ID",
+        //             "SOL Description",
+        //             "Customer Name",
+        //             "CIF",
+        //             "Account Number",
+        //             "Account Opening Date",
+        //             "Scheme Code",
+        //             "Scheme Type",
+        //             "Transaction ID",
+        //             "Transaction Amount",
+        //             "Fund Transfer Date",
+        //             "Payment Status",
+        //             "Failed Reason",
+        //             "CIF Creation Date",
+        //             "Address",
+        //             "API Response",
+        //             // "Modified"
+        //         ];
+
+        //         const lines = [headers.join(",")];
+
+        //         (rows || []).forEach(r => {
+        //             lines.push([
+        //                 csvSafe(r.sol_id ?? "Nil"),
+        //                 csvSafe(r.sol_desc ?? "Nil"),
+        //                 csvSafe(r.customer_name ?? "Nil"),
+        //                 csvSafe(r.cif ?? "Nil"),
+        //                 csvSafe(r.account_number ?? "Nil"),
+        //                 csvSafe(r.account_opening_date ?? "Nil"),
+        //                 csvSafe(r.scheme_code ?? "Nil"),
+        //                 csvSafe(r.scheme_type ?? "Nil"),
+        //                 csvSafe(r.transaction_id ?? "Nil"),
+        //                 csvSafe(r.transaction_amount ?? "Nil"),
+        //                 csvSafe(r.fund_transfer_date ?? "Nil"),
+        //                 csvSafe(r.payment_status ?? "Nil"),
+        //                 csvSafe(r.failed_reason ?? "Nil"),
+        //                 csvSafe(r.cif_creation_date ?? "Nil"),
+        //                 csvSafe(r.address ?? "Nil"),
+        //                 csvSafe(r.api_response ?? "Nil"),
+        //                 // csvSafe(r.modified ?? "Nil")
+        //             ].join(","));
+        //         });
+
+        //         const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+        //         const a = document.createElement("a");
+        //         a.href = URL.createObjectURL(blob);
+
+        //         const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+        //         a.download = `share-tracker-consolidated-${ts}.csv`;
+
+        //         document.body.appendChild(a);
+
+        //         showExportLoader("Opening download…");
+        //         await new Promise(resolve => setTimeout(resolve, 250));
+
+        //         a.click();
+        //         document.body.removeChild(a);
+        //         URL.revokeObjectURL(a.href);
+
+        //         setTimeout(() => {
+        //             hideExportLoader();
+        //             setExportButtonLoading(false);
+        //         }, 500);
+
+        //         if (window.frappe && frappe.show_alert) {
+        //             frappe.show_alert({
+        //                 message: __("Consolidated report downloaded"),
+        //                 indicator: "green"
+        //             });
+        //         }
+        //     } catch (e) {
+        //         console.error(e);
+        //         hideExportLoader();
+        //         setExportButtonLoading(false);
+
+        //         if (window.frappe && frappe.show_alert) {
+        //             frappe.show_alert({
+        //                 message: __("Unable to export report"),
+        //                 indicator: "red"
+        //             });
+        //         }
+        //     }
+        // }
+        async function exportFilteredCSV() {
             try {
                 setExportButtonLoading(true);
-                showExportLoader("Building consolidated report and preparing download…");
+                showExportLoader("Preparing filtered report...");
 
+                // const rows = await apiCall("banking_api.www.share_tracker.get_share_tracker_export_rows", {
+                //     view: currentTab,
+                //     search: searchQ ? searchQ : null,
+                //     sol_ids: selectedSolIds.size ? [...selectedSolIds] : null,
+                //     sort_by: getSortBy(),
+                //     sort_order: getSortOrder()
+                // });
+
+
+                // // ///////////////////////////////////
                 // const rows = await apiCall("banking_api.www.share_tracker.get_share_tracker_export_rows", {
                 //     search: searchQ ? searchQ : null,
                 //     sol_ids: selectedSolIds.size ? [...selectedSolIds] : null,
                 //     sort_by: getSortBy(),
                 //     sort_order: getSortOrder()
                 // });
+
                 const rows = await apiCall("banking_api.www.share_tracker.get_share_tracker_export_rows", {
+                    view: currentTab,
                     search: searchQ ? searchQ : null,
                     sol_ids: selectedSolIds.size ? [...selectedSolIds] : null,
-                    from_date: fromDate || null,
-                    to_date: toDate || null,
                     sort_by: getSortBy(),
                     sort_order: getSortOrder()
                 });
 
                 const exportCount = Array.isArray(rows) ? rows.length : 0;
-                showExportLoader(`Finalizing CSV for ${formatNumber(exportCount)} records…`);
+                showExportLoader(`Finalizing CSV for ${formatNumber(exportCount)} records...`);
 
-                const headers = [
-                    "Application ID",
-                    "SOL ID",
-                    "SOL Description",
-                    "CIF",
-                    "Account Number",
-                    "Transaction ID",
-                    "Payment Status",
-                    "Status Label",
-                    "Insufficient Balance",
-                    "Account Closed",
-                    "Fund Transfer Date",
-                    "CIF Creation Date",
-                    "Account Opening Date",
-                    "Modified",
-                    "Error Log"
-                ];
-
-                const lines = [headers.join(",")];
-
-                (rows || []).forEach(r => {
-                    const row = normalizeRecord(r);
-                    lines.push([
-                        csvSafe(row.name),
-                        csvSafe(row.sol_id),
-                        csvSafe(r.sol_desc || ""),
-                        csvSafe(row.cif),
-                        csvSafe(row.account_number),
-                        csvSafe(row.transaction_id),
-                        csvSafe(row.payment_status),
-                        csvSafe(getStatusLabel(row)),
-                        csvSafe(cintLike(row.insufficient_balance)),
-                        csvSafe(cintLike(row.account_closed)),
-                        // csvSafe(row.fund_transfer_date),
-                        // csvSafe(row.cif_creation_date),
-                        // csvSafe(row.account_opening_date),
-                        // csvSafe(row.modified),
-                        csvSafe(formatDateTime(row.fundtransferdate)),
-                        csvSafe(formatDate(row.cifcreationdate)),
-                        csvSafe(formatDate(row.accountopeningdate)),
-                        csvSafe(formatDateTime(row.modified)),
-                        csvSafe(row.error_log)
-                    ].join(","));
-                });
-
-                const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-
-                const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
-                a.download = `share-tracker-consolidated-${ts}.csv`;
-
-                document.body.appendChild(a);
-
-                showExportLoader("Opening download…");
-                await new Promise(resolve => setTimeout(resolve, 250));
-
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(a.href);
+                const lines = buildExportLines(rows || []);
+                triggerCsvDownload(lines, `share-tracker-filtered-${currentTab}`);
 
                 setTimeout(() => {
                     hideExportLoader();
                     setExportButtonLoading(false);
-                }, 500);
+                }, 300);
 
                 if (window.frappe && frappe.show_alert) {
                     frappe.show_alert({
-                        message: __("Consolidated report downloaded"),
+                        message: __("Filtered report downloaded"),
                         indicator: "green"
                     });
                 }
@@ -2981,46 +3477,12 @@
 
                 if (window.frappe && frappe.show_alert) {
                     frappe.show_alert({
-                        message: __("Unable to export report"),
+                        message: __("Unable to export filtered report"),
                         indicator: "red"
                     });
                 }
             }
         }
-
-        // function exportCSV() {
-        //     const rows = currentRows;
-        //     const headers = [
-        //         "SOL ID", "CIF", "Account Number", "Transaction ID", "Payment Status",
-        //         "Insufficient Balance", "Account Closed", "Fund Transfer Date", "CIF Creation Date", "Account Opening Date"
-        //     ];
-        //     const lines = [headers.join(",")];
-
-        //     rows.forEach(r => {
-        //         lines.push([
-        //             csvSafe(r.sol_id),
-        //             csvSafe(r.cif),
-        //             csvSafe(r.account_number),
-        //             csvSafe(r.transaction_id),
-        //             csvSafe(r.payment_status),
-        //             csvSafe(cintLike(r.insufficient_balance)),
-        //             csvSafe(cintLike(r.account_closed)),
-        //             csvSafe(r.fund_transfer_date),
-        //             csvSafe(r.cif_creation_date),
-        //             csvSafe(r.account_opening_date)
-        //         ].join(","));
-        //     });
-
-        //     const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-        //     const a = document.createElement("a");
-        //     a.href = URL.createObjectURL(blob);
-        //     a.download = `share-application-${currentTab}.csv`;
-        //     a.click();
-        //     URL.revokeObjectURL(a.href);
-        // }
-
-
-
 
         function csvSafe(val) {
             const str = String(val ?? "");
@@ -3079,54 +3541,6 @@
             });
         }
 
-        // async function openRecordModal(cif) {
-        //     ensureModal();
-
-        //     const overlay = document.getElementById("recordDetailOverlay");
-        //     const sub = document.getElementById("recordDetailSub");
-        //     const body = document.getElementById("recordDetailBody");
-
-        //     overlay.style.display = "flex";
-        //     sub.textContent = "Fetching record details...";
-        //     body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-secondary);">Loading details...</div>`;
-
-        //     try {
-        //         const doc = await apiCall("banking_api.www.share_tracker.get_share_application_by_cif", {
-        //             cif: decodeURIComponent(cif)
-        //         });
-
-        //         if (!doc) {
-        //             sub.textContent = "Record not found";
-        //             body.innerHTML = `<div style="color:var(--text-secondary);">No details found for CIF ${escapeHtml(decodeURIComponent(cif))}</div>`;
-        //             return;
-        //         }
-
-        //         sub.textContent = `CIF ${doc.cif || "-"} · ${doc.name || "-"}`;
-        //         body.innerHTML = `
-        //         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
-        //             ${detailCard("SOL ID", doc.sol_id)}
-        //             ${detailCard("SOL Description", doc.sol_desc || "-")}
-        //             ${detailCard("CIF", doc.cif)}
-        //             ${detailCard("Account Number", doc.account_number)}
-        //             ${detailCard("Transaction ID", doc.transaction_id || "-")}
-        //             ${detailCard("Payment Status", doc.payment_status || "-")}
-        //             ${detailCard("Insufficient Balance", cintLike(doc.insufficient_balance) ? "Yes" : "No")}
-        //             ${detailCard("Account Closed", cintLike(doc.account_closed) ? "Yes" : "No")}
-        //             ${detailCard("Fund Transfer Date", formatDateTime(doc.fund_transfer_date))}
-        //             ${detailCard("CIF Creation Date", formatDate(doc.cif_creation_date))}
-        //             ${detailCard("Account Opening Date", formatDate(doc.account_opening_date))}
-        //         </div>
-        //         <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
-        //             <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">API Response</div>
-        //             <pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6;color:var(--text-primary);font-family:'SF Mono','Fira Code',monospace;">${escapeHtml(doc.error_log || "-")}</pre>
-        //         </div>
-        //     `;
-        //     } catch (e) {
-        //         sub.textContent = "Error";
-        //         body.innerHTML = `<div style="color:var(--red);">Unable to fetch record details.</div>`;
-        //     }
-        // }
-
         async function openRecordModal(cif) {
             ensureModal();
 
@@ -3178,7 +3592,7 @@
         ${detailCard("Account Number", doc.account_number)}
         ${detailCard("Transaction ID", doc.transaction_id || "-")}
         ${detailCard("Payment Status", doc.payment_status || "-")}
-        ${detailCard("Insufficient Balance", cintLike(doc.insufficient_balance) ? "Yes" : "No")}
+        ${detailCard("Insufficient Balance", cintLike(doc.ficient_balance) ? "Yes" : "No")}
         ${detailCard("Account Closed", cintLike(doc.account_closed) ? "Yes" : "No")}
         ${detailCard("Account Frozen", cintLike(doc.account_frozen) ? "Yes" : "No")}
         ${detailCard("Account Not Found", cintLike(doc.account_not_found) ? "Yes" : "No")}
@@ -3487,6 +3901,181 @@
             }
         }
 
+        function openExportModal() {
+            const overlay = document.getElementById("exportModalOverlay");
+            if (!overlay) return;
+            overlay.classList.add("show");
+            overlay.setAttribute("aria-hidden", "false");
+        }
+
+        function closeExportModal() {
+            const overlay = document.getElementById("exportModalOverlay");
+            if (!overlay) return;
+            overlay.classList.remove("show");
+            overlay.setAttribute("aria-hidden", "true");
+        }
+
+        function getSelectedExportReportType() {
+            const el = document.querySelector('input[name="exportReportType"]:checked');
+            return el ? el.value : "all";
+        }
+
+        function getExportModalDateRange() {
+            const from_date = (document.getElementById("exportFromDate") || {}).value || null;
+            const to_date = (document.getElementById("exportToDate") || {}).value || null;
+            return { from_date, to_date };
+        }
+
+        function buildExportHeaders() {
+            return [
+                "SOL ID",
+                "SOL Description",
+                "Customer Name",
+                "CIF",
+                "Account Number",
+                "Account Opening Date",
+                "Scheme Code",
+                "Scheme Type",
+                "Transaction ID",
+                "Transaction Amount",
+                "Fund Transfer Date",
+                "Payment Status",
+                "Failed Reason",
+                "CIF Creation Date",
+                "Address",
+                "API Response",
+                // "Modified"
+            ];
+        }
+
+        function buildExportLines(rows) {
+            const headers = buildExportHeaders();
+            const lines = [headers.join(",")];
+
+            (rows || []).forEach(r => {
+                lines.push([
+                    csvSafe(r.sol_id ?? "Nil"),
+                    csvSafe(r.sol_desc ?? "Nil"),
+                    csvSafe(r.customer_name ?? "Nil"),
+                    csvSafe(r.cif ?? "Nil"),
+                    csvSafe(r.account_number ?? "Nil"),
+                    csvSafe(r.account_opening_date ?? "Nil"),
+                    csvSafe(r.scheme_code ?? "Nil"),
+                    csvSafe(r.scheme_type ?? "Nil"),
+                    csvSafe(r.transaction_id ?? "Nil"),
+                    csvSafe(r.transaction_amount ?? "Nil"),
+                    csvSafe(r.fund_transfer_date ?? "Nil"),
+                    csvSafe(r.payment_status ?? "Nil"),
+                    csvSafe(r.failed_reason ?? "Nil"),
+                    csvSafe(r.cif_creation_date ?? "Nil"),
+                    csvSafe(r.address ?? "Nil"),
+                    csvSafe(r.api_response ?? "Nil"),
+                    // csvSafe(r.modified ?? "Nil")
+                ].join(","));
+            });
+
+            return lines;
+        }
+
+        function triggerCsvDownload(lines, filenamePrefix) {
+            const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+
+            const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+            a.download = `${filenamePrefix}-${ts}.csv`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+        function getViewForReportType(reportType) {
+            if (reportType === "pending") return "pending";
+            if (reportType === "success") return "success";
+            if (reportType === "failed") return "failed";
+            return "all";
+        }
+
+        async function downloadExportFromModal() {
+            const reportType = getSelectedExportReportType();
+            const { from_date, to_date } = getExportModalDateRange();
+
+            if (from_date && to_date && from_date > to_date) {
+                if (window.frappe && frappe.show_alert) {
+                    frappe.show_alert({
+                        message: __("From date cannot be greater than To date"),
+                        indicator: "orange"
+                    });
+                }
+                return;
+            }
+
+            try {
+                closeExportModal();
+                showExportLoader("Preparing selected report...");
+                setExportButtonLoading(true);
+
+                // const rows = await apiCall("banking_api.www.share_tracker.get_share_tracker_export_rows", {
+                //     view: getViewForReportType(reportType),
+                //     from_date: from_date || null,
+                //     to_date: to_date || null,
+                //     sort_by: "modified",
+                //     sort_order: "desc"
+                // });
+
+                const rows = await apiCall("banking_api.www.share_tracker.get_share_tracker_export_rows", {
+                    view: currentTab,
+                    search: searchQ ? searchQ : null,
+                    sol_ids: selectedSolIds.size ? [...selectedSolIds] : null,
+                    sort_by: getSortBy(),
+                    sort_order: getSortOrder()
+                });
+
+                const lines = buildExportLines(rows || []);
+                triggerCsvDownload(lines, `share-tracker-${reportType}`);
+
+                hideExportLoader();
+                setExportButtonLoading(false);
+
+                if (window.frappe && frappe.show_alert) {
+                    frappe.show_alert({
+                        message: __(`${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report downloaded`),
+                        indicator: "green"
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                hideExportLoader();
+                setExportButtonLoading(false);
+
+                if (window.frappe && frappe.show_alert) {
+                    frappe.show_alert({
+                        message: __("Unable to export selected report"),
+                        indicator: "red"
+                    });
+                }
+            }
+        }
+        function pillHTML(row) {
+            const key = getStatusKey(row);
+            const label = getStatusLabel(row);
+
+            const clsMap = {
+                pending: "pill-pending",
+                insuf: "pill-insuf",
+                closed: "pill-closed",
+                frozen: "pill-frozen",
+                not_found: "pill-not-found",
+                success: "pill-success",
+                failed: "pill-insuf",
+                unknown: "pill-closed"
+            };
+
+            return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
+        }
+
         document.addEventListener("DOMContentLoaded", async function () {
             bindExistingTabButtons();
             ensureModal();
@@ -3503,6 +4092,56 @@
         updateDateFilterUI();
     </script>
     <!-- end -->
+    {% else %}
+    <div class="shell">
+        <header class="topbar">
+            <div class="topbar-left">
+                <a href="/app/sahayog-home" class="logo">
+                    <img src="/assets/banking_api/images/sahayog_logo_2025.png" alt="Sahayog Logo" class="logo-img">
+                </a>
+            </div>
+
+            <div class="topbar-right">
+                <div class="avatar">{{ user_avatar or "🔒" }}</div>
+                <div class="user-meta">
+                    <div class="user-name">{{ user_display_name or "Access Restricted" }}</div>
+                    <div class="user-email">{{ current_user or "Guest" }}</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="denied-wrap">
+            <section class="denied-card">
+                <div class="denied-icon" aria-hidden="true">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+                        <path d="M8 11V8a4 4 0 1 1 8 0v3"></path>
+                        <circle cx="12" cy="16" r="1.2" fill="currentColor" stroke="none"></circle>
+                    </svg>
+                </div>
+
+                <h1 class="denied-title">Access Denied</h1>
+                <p class="denied-sub">
+                    You do not have permission to access Share Fund Tracker.
+                    Please contact your administrator if you believe this is incorrect.
+                </p>
+
+                <div class="denied-meta">
+                    <span>Logged in as</span>
+                    <strong style="color: var(--text-primary); font-weight: 600;">
+                        {{ current_user or "Guest" }}
+                    </strong>
+                </div>
+
+                <div class="denied-actions">
+                    <a href="/app/sahayog-home" class="denied-btn">Go to Desk</a>
+                    <a href="/app/user-profile" class="denied-btn primary">Open Profile</a>
+                </div>
+            </section>
+        </main>
+    </div>
+    {% endif %}
 </body>
 
 </html>

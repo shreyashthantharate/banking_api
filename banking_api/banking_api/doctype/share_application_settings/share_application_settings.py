@@ -961,7 +961,7 @@ def run_bulk_share_application_payment():
     share_applications = frappe.get_all(
         "Share Application",
         filters={
-            "payment_status": ["!=", "Success"],
+            "payment_status": ["=", "Pending"],
             "docstatus": 0
         },
         fields=["name", "payment_status"]
@@ -1166,4 +1166,131 @@ def run_share_application_sync_and_payment():
         "status": "success" if payment_result.get("status") == "success" else "warning",
         "sync_result": sync_result,
         "payment_result": payment_result
+    }
+
+
+@frappe.whitelist()
+def retry_share_application_payment():
+    settings = frappe.get_single("Share Application Settings")
+
+    if not settings.enable_fund_transfer:
+        return {
+            "status": "skipped",
+            "message": "Fund transfer is disabled in Share Application Settings."
+        }
+
+    share_applications = frappe.get_all(
+        "Share Application",
+        filters={
+            "payment_status": ["=", "Failed"],
+            "docstatus": 0
+        },
+        fields=["name", "payment_status"]
+    )
+
+    if not share_applications:
+        return {
+            "status": "success",
+            "message": "No pending Share Application records found for bulk payment.",
+            "processed_count": 0,
+            "success_count": 0,
+            "failed_count": 0,
+            "skipped_count": 0
+        }
+
+    processed_count = 0
+    success_count = 0
+    failed_count = 0
+    skipped_count = 0
+    result_lines = []
+
+    pause_after_records = 500
+    pause_seconds = 10
+
+    with tqdm(
+        total=len(share_applications),
+        desc="Share Application Payment",
+        unit="doc",
+        ncols=120,
+        position=0,
+        leave=True
+    ) as pbar:
+
+        for row in share_applications:
+            docname = row.get("name")
+
+            if not docname:
+                skipped_count += 1
+                processed_count += 1
+
+                pbar.update(1)
+                pbar.set_postfix(
+                    success=success_count,
+                    failed=failed_count,
+                    skipped=skipped_count
+                )
+                continue
+
+            processed_count += 1
+
+            try:
+                result = pay_now_share_application(docname)
+
+                if isinstance(result, dict):
+                    result_status = (result.get("status") or "").lower()
+                    result_message = result.get("message") or ""
+
+                    if result_status == "success":
+                        success_count += 1
+                    elif result_status in ("skipped", "warning"):
+                        skipped_count += 1
+                    else:
+                        failed_count += 1
+
+                    result_lines.append(f"{docname}: {result_message}")
+                else:
+                    failed_count += 1
+                    result_lines.append(
+                        f"{docname}: Unexpected response returned.")
+
+            except Exception as e:
+                failed_count += 1
+                frappe.log_error(
+                    frappe.get_traceback(),
+                    f"Bulk Share Payment Failed for {docname}"
+                )
+                result_lines.append(f"{docname}: {str(e)}")
+
+            pbar.update(1)
+            pbar.set_postfix(
+                success=success_count,
+                failed=failed_count,
+                skipped=skipped_count
+            )
+
+            if processed_count % pause_after_records == 0:
+                with tqdm(
+                    total=pause_seconds,
+                    desc=f"Paused after {processed_count} records | Press Ctrl+Z to stop",
+                    unit="sec",
+                    ncols=120,
+                    position=1,
+                    leave=False
+                ) as pause_bar:
+                    for remaining in range(pause_seconds, 0, -1):
+                        pause_bar.set_postfix(remaining=f"{remaining}s")
+                        time.sleep(1)
+                        pause_bar.update(1)
+
+    return {
+        "status": "success" if failed_count == 0 else "warning",
+        "message": (
+            f"Bulk payment completed. Processed: {processed_count}, "
+            f"Success: {success_count}, Failed: {failed_count}, Skipped: {skipped_count}."
+            + ("<br><br>" + "<br>".join(result_lines) if result_lines else "")
+        ),
+        "processed_count": processed_count,
+        "success_count": success_count,
+        "failed_count": failed_count,
+        "skipped_count": skipped_count
     }
