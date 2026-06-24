@@ -183,7 +183,7 @@ scheduler_events = {
     # ]
     "cron": {
         # run share application sync and payment
-        "0 11,17 * * *": [
+        "0 11,14,17 * * *": [
             "banking_api.banking_api.doctype.share_application_settings.share_application_settings.run_share_application_sync_and_payment"
         ],
 
