@@ -2,6 +2,9 @@ import json
 import frappe
 from frappe.utils import cint
 
+import csv
+import io
+
 import json
 import frappe
 from frappe import _
@@ -973,6 +976,159 @@ def row_matches_view(row, view):
 #     return rows
 
 
+# working
+# @frappe.whitelist()
+# def get_share_tracker_export_rows(
+#     view="all",
+#     search=None,
+#     sol_ids=None,
+#     from_date=None,
+#     to_date=None,
+#     sort_by="modified",
+#     sort_order="desc"
+# ):
+#     validate_share_tracker_access()
+
+#     allowed_sort_by = {
+#         "modified", "sol_id", "cif_creation_date",
+#         "fund_transfer_date", "creation", "name"
+#     }
+#     allowed_sort_order = {"asc", "desc"}
+
+#     if sort_by not in allowed_sort_by:
+#         sort_by = "modified"
+#     if str(sort_order).lower() not in allowed_sort_order:
+#         sort_order = "desc"
+
+#     filters = {}
+
+#     if view == "pending":
+#         filters["payment_status"] = "Pending"
+#     elif view == "success":
+#         filters["payment_status"] = "Success"
+#     elif view == "failed":
+#         filters["payment_status"] = "Failed"
+#     elif view == "today":
+#         today = nowdate()
+#         filters["creation"] = ["between", [
+#             f"{today} 00:00:00", f"{today} 23:59:59"]]
+#     elif view == "insuf":
+#         filters["insufficient_balance"] = 1
+#     elif view == "closed":
+#         filters["account_closed"] = 1
+#     elif view == "frozen":
+#         filters["account_frozen"] = 1
+#     elif view == "not_found":
+#         filters["account_not_found"] = 1
+
+#     if sol_ids:
+#         if isinstance(sol_ids, str):
+#             sol_ids = json.loads(sol_ids)
+#         if sol_ids:
+#             filters["sol_id"] = ["in", sol_ids]
+
+#     if from_date and to_date:
+#         filters["fund_transfer_date"] = ["between", [from_date, to_date]]
+#     elif from_date:
+#         filters["fund_transfer_date"] = [">=", from_date]
+#     elif to_date:
+#         filters["fund_transfer_date"] = ["<=", to_date]
+
+#     fields = [
+#         "name",
+#         "sol_id",
+#         "cif",
+#         "account_number",
+#         "transaction_id",
+#         "payment_status",
+#         "insufficient_balance",
+#         "account_closed",
+#         "account_frozen",
+#         "account_not_found",
+#         "fund_transfer_date",
+#         "cif_creation_date",
+#         "account_opening_date",
+#         "customer_name",
+#         "address",
+#         "scheme_type",
+#         "scheme_code",
+#         "transaction_amount",
+#         "error_log",
+#         "modified"
+#     ]
+
+#     if search:
+#         search = str(search).strip()
+#         like_txt = f"%{search}%"
+
+#         rows = frappe.get_all(
+#             "Share Application",
+#             fields=fields,
+#             filters=filters,
+#             or_filters=[
+#                 ["Share Application", "name", "like", like_txt],
+#                 ["Share Application", "sol_id", "like", like_txt],
+#                 ["Share Application", "cif", "like", like_txt],
+#                 ["Share Application", "account_number", "like", like_txt],
+#                 ["Share Application", "transaction_id", "like", like_txt],
+#                 ["Share Application", "payment_status", "like", like_txt],
+#                 ["Share Application", "customer_name", "like", like_txt],
+#                 ["Share Application", "scheme_code", "like", like_txt],
+#                 ["Share Application", "scheme_type", "like", like_txt],
+#             ],
+#             order_by=f"`tabShare Application`.`{sort_by}` {sort_order}",
+#             limit_page_length=0
+#         )
+#     else:
+#         rows = frappe.get_all(
+#             "Share Application",
+#             fields=fields,
+#             filters=filters,
+#             order_by=f"`tabShare Application`.`{sort_by}` {sort_order}",
+#             limit_page_length=0
+#         )
+
+#     rows = attach_sol_descriptions(rows)
+
+#     def get_failed_reason(row):
+#         reasons = []
+
+#         if cint(row.get("insufficient_balance")) == 1:
+#             reasons.append("Insufficient Balance")
+#         if cint(row.get("account_closed")) == 1:
+#             reasons.append("Account Closed")
+#         if cint(row.get("account_frozen")) == 1:
+#             reasons.append("Account Frozen")
+#         if cint(row.get("account_not_found")) == 1:
+#             reasons.append("Account Not Found")
+
+#         return ", ".join(reasons) if reasons else "Nil"
+
+#     export_rows = []
+#     for row in rows:
+#         export_rows.append({
+#             "sol_id": row.get("sol_id") or "Nil",
+#             "sol_desc": row.get("sol_desc") or "Nil",
+#             "customer_name": row.get("customer_name") or "Nil",
+#             "cif": row.get("cif") or "Nil",
+#             "account_number": row.get("account_number") or "Nil",
+#             "account_opening_date": row.get("account_opening_date") or "Nil",
+#             "scheme_code": row.get("scheme_code") or "Nil",
+#             "scheme_type": row.get("scheme_type") or "Nil",
+#             "transaction_id": row.get("transaction_id") or "Nil",
+#             "transaction_amount": row.get("transaction_amount") if row.get("transaction_amount") not in (None, "") else "Nil",
+#             "fund_transfer_date": row.get("fund_transfer_date") or "Nil",
+#             "payment_status": row.get("payment_status") or "Nil",
+#             "failed_reason": get_failed_reason(row),
+#             "cif_creation_date": row.get("cif_creation_date") or "Nil",
+#             "address": row.get("address") or "Nil",
+#             "api_response": row.get("error_log") or "Nil",
+#             "modified": row.get("modified") or "Nil"
+#         })
+
+#     return export_rows
+
+
 @frappe.whitelist()
 def get_share_tracker_export_rows(
     view="all",
@@ -981,145 +1137,222 @@ def get_share_tracker_export_rows(
     from_date=None,
     to_date=None,
     sort_by="modified",
-    sort_order="desc"
+    sort_order="desc",
 ):
     validate_share_tracker_access()
 
-    allowed_sort_by = {
-        "modified", "sol_id", "cif_creation_date",
-        "fund_transfer_date", "creation", "name"
-    }
-    allowed_sort_order = {"asc", "desc"}
-
-    if sort_by not in allowed_sort_by:
-        sort_by = "modified"
-    if str(sort_order).lower() not in allowed_sort_order:
-        sort_order = "desc"
-
-    filters = {}
-
-    if view == "pending":
-        filters["payment_status"] = "Pending"
-    elif view == "success":
-        filters["payment_status"] = "Success"
-    elif view == "failed":
-        filters["payment_status"] = "Failed"
-    elif view == "today":
-        today = nowdate()
-        filters["creation"] = ["between", [
-            f"{today} 00:00:00", f"{today} 23:59:59"]]
-    elif view == "insuf":
-        filters["insufficient_balance"] = 1
-    elif view == "closed":
-        filters["account_closed"] = 1
-    elif view == "frozen":
-        filters["account_frozen"] = 1
-    elif view == "not_found":
-        filters["account_not_found"] = 1
-
-    if sol_ids:
-        if isinstance(sol_ids, str):
+    if isinstance(sol_ids, str):
+        try:
             sol_ids = json.loads(sol_ids)
-        if sol_ids:
-            filters["sol_id"] = ["in", sol_ids]
+        except Exception:
+            sol_ids = []
+    sol_ids = sol_ids or []
 
-    if from_date and to_date:
-        filters["fund_transfer_date"] = ["between", [from_date, to_date]]
-    elif from_date:
-        filters["fund_transfer_date"] = [">=", from_date]
-    elif to_date:
-        filters["fund_transfer_date"] = ["<=", to_date]
+    allowed_sort_fields = {
+        "sol_id": "sa.sol_id",
+        "cif_creation_date": "sa.cif_creation_date",
+        "fund_transfer_date": "sa.fund_transfer_date",
+        "modified": "sa.modified",
+    }
+    sort_column = allowed_sort_fields.get(sort_by, "sa.modified")
+    sort_direction = "ASC" if str(sort_order).lower() == "asc" else "DESC"
 
-    fields = [
-        "name",
-        "sol_id",
-        "cif",
-        "account_number",
-        "transaction_id",
-        "payment_status",
-        "insufficient_balance",
-        "account_closed",
-        "account_frozen",
-        "account_not_found",
-        "fund_transfer_date",
-        "cif_creation_date",
-        "account_opening_date",
-        "customer_name",
-        "address",
-        "scheme_type",
-        "scheme_code",
-        "transaction_amount",
-        "error_log",
-        "modified"
-    ]
+    conditions = []
+    values = {}
 
     if search:
-        search = str(search).strip()
-        like_txt = f"%{search}%"
+        conditions.append("""
+            (
+                sa.sol_id LIKE %(search)s
+                OR CAST(sa.cif AS CHAR) LIKE %(search)s
+                OR CAST(sa.account_number AS CHAR) LIKE %(search)s
+                OR sa.transaction_id LIKE %(search)s
+                OR sa.customer_name LIKE %(search)s
+            )
+        """)
+        values["search"] = f"%{search.strip()}%"
 
-        rows = frappe.get_all(
-            "Share Application",
-            fields=fields,
-            filters=filters,
-            or_filters=[
-                ["Share Application", "name", "like", like_txt],
-                ["Share Application", "sol_id", "like", like_txt],
-                ["Share Application", "cif", "like", like_txt],
-                ["Share Application", "account_number", "like", like_txt],
-                ["Share Application", "transaction_id", "like", like_txt],
-                ["Share Application", "payment_status", "like", like_txt],
-                ["Share Application", "customer_name", "like", like_txt],
-                ["Share Application", "scheme_code", "like", like_txt],
-                ["Share Application", "scheme_type", "like", like_txt],
-            ],
-            order_by=f"`tabShare Application`.`{sort_by}` {sort_order}",
-            limit_page_length=0
+    if sol_ids:
+        conditions.append("sa.sol_id IN %(sol_ids)s")
+        values["sol_ids"] = tuple(sol_ids)
+
+    if from_date:
+        conditions.append("DATE(sa.fund_transfer_date) >= %(from_date)s")
+        values["from_date"] = from_date
+
+    if to_date:
+        conditions.append("DATE(sa.fund_transfer_date) <= %(to_date)s")
+        values["to_date"] = to_date
+
+    where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+    query = f"""
+        SELECT
+            sa.name,
+            sa.sol_id,
+            IFNULL(sb.branch, '') AS sol_desc,
+            IFNULL(sa.customer_name, '') AS customer_name,
+            sa.cif,
+            sa.account_number,
+            sa.account_opening_date,
+            IFNULL(sa.scheme_code, '') AS scheme_code,
+            IFNULL(sa.scheme_type, '') AS scheme_type,
+            IFNULL(sa.transaction_id, '') AS transaction_id,
+            sa.transaction_amount,
+            sa.fund_transfer_date,
+            IFNULL(sa.payment_status, '') AS payment_status,
+            IFNULL(sa.insufficient_balance, 0) AS insufficient_balance,
+            IFNULL(sa.account_closed, 0) AS account_closed,
+            IFNULL(sa.account_frozen, 0) AS account_frozen,
+            IFNULL(sa.account_not_found, 0) AS account_not_found,
+            sa.cif_creation_date,
+            IFNULL(sa.address, '') AS address,
+            IFNULL(sa.error_log, '') AS api_response,
+            sa.modified
+        FROM `tabShare Application` sa
+        LEFT JOIN `tabSahayog Branch` sb
+            ON sb.sol_id = sa.sol_id
+        WHERE {where_clause}
+        ORDER BY {sort_column} {sort_direction}
+    """
+
+    rows = frappe.db.sql(query, values, as_dict=True)
+    rows = [attach_failed_reason(row) for row in rows]
+    rows = [row for row in rows if row_matches_view(row, view)]
+
+    return rows
+
+
+def attach_failed_reason(row):
+    reasons = []
+
+    if cint(row.get("insufficient_balance")) == 1:
+        reasons.append("Insufficient Balance")
+    if cint(row.get("account_closed")) == 1:
+        reasons.append("Account Closed")
+    if cint(row.get("account_frozen")) == 1:
+        reasons.append("Account Frozen")
+    if cint(row.get("account_not_found")) == 1:
+        reasons.append("Account Not Found")
+
+    row["failed_reason"] = ", ".join(reasons) if reasons else ""
+    return row
+
+
+def row_matches_view(row, view):
+    view = (view or "all").strip().lower()
+    payment_status = (row.get("payment_status") or "").strip().lower()
+
+    if view == "all":
+        return True
+    if view == "success":
+        return payment_status == "success"
+    if view == "pending":
+        return payment_status == "pending"
+    if view == "failed":
+        return (
+            payment_status == "failed"
+            or cint(row.get("insufficient_balance")) == 1
+            or cint(row.get("account_closed")) == 1
+            or cint(row.get("account_frozen")) == 1
+            or cint(row.get("account_not_found")) == 1
         )
-    else:
-        rows = frappe.get_all(
-            "Share Application",
-            fields=fields,
-            filters=filters,
-            order_by=f"`tabShare Application`.`{sort_by}` {sort_order}",
-            limit_page_length=0
-        )
+    if view == "insuf":
+        return cint(row.get("insufficient_balance")) == 1
+    if view == "closed":
+        return cint(row.get("account_closed")) == 1
+    if view == "frozen":
+        return cint(row.get("account_frozen")) == 1
+    if view == "notfound":
+        return cint(row.get("account_not_found")) == 1
+    if view == "today":
+        return False
 
-    rows = attach_sol_descriptions(rows)
+    return True
 
-    def get_failed_reason(row):
-        reasons = []
 
-        if cint(row.get("insufficient_balance")) == 1:
-            reasons.append("Insufficient Balance")
-        if cint(row.get("account_closed")) == 1:
-            reasons.append("Account Closed")
-        if cint(row.get("account_frozen")) == 1:
-            reasons.append("Account Frozen")
-        if cint(row.get("account_not_found")) == 1:
-            reasons.append("Account Not Found")
+@frappe.whitelist()
+def download_share_tracker_csv(
+    view="all",
+    search=None,
+    sol_ids=None,
+    from_date=None,
+    to_date=None,
+    sort_by="modified",
+    sort_order="desc",
+):
+    validate_share_tracker_access()
 
-        return ", ".join(reasons) if reasons else "Nil"
+    sol_ids_list = []
+    if sol_ids:
+        try:
+            if isinstance(sol_ids, str):
+                sol_ids_list = json.loads(sol_ids)
+            elif isinstance(sol_ids, (list, tuple)):
+                sol_ids_list = list(sol_ids)
+        except Exception:
+            sol_ids_list = []
 
-    export_rows = []
+    rows = get_share_tracker_export_rows(
+        view=view,
+        search=search,
+        sol_ids=sol_ids_list,
+        from_date=from_date,
+        to_date=to_date,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "SOL ID",
+        "SOL Description",
+        "Customer Name",
+        "CIF",
+        "Account Number",
+        "Account Opening Date",
+        "Scheme Code",
+        "Scheme Type",
+        "Transaction ID",
+        "Transaction Amount",
+        "Fund Transfer Date",
+        "Payment Status",
+        "Failed Reason",
+        "CIF Creation Date",
+        "Address",
+        "API Response",
+        "Modified",
+    ])
+
     for row in rows:
-        export_rows.append({
-            "sol_id": row.get("sol_id") or "Nil",
-            "sol_desc": row.get("sol_desc") or "Nil",
-            "customer_name": row.get("customer_name") or "Nil",
-            "cif": row.get("cif") or "Nil",
-            "account_number": row.get("account_number") or "Nil",
-            "account_opening_date": row.get("account_opening_date") or "Nil",
-            "scheme_code": row.get("scheme_code") or "Nil",
-            "scheme_type": row.get("scheme_type") or "Nil",
-            "transaction_id": row.get("transaction_id") or "Nil",
-            "transaction_amount": row.get("transaction_amount") if row.get("transaction_amount") not in (None, "") else "Nil",
-            "fund_transfer_date": row.get("fund_transfer_date") or "Nil",
-            "payment_status": row.get("payment_status") or "Nil",
-            "failed_reason": get_failed_reason(row),
-            "cif_creation_date": row.get("cif_creation_date") or "Nil",
-            "address": row.get("address") or "Nil",
-            "api_response": row.get("error_log") or "Nil",
-            "modified": row.get("modified") or "Nil"
-        })
+        writer.writerow([
+            row.get("sol_id") or "Nil",
+            row.get("sol_desc") or "Nil",
+            row.get("customer_name") or "Nil",
+            row.get("cif") or "Nil",
+            row.get("account_number") or "Nil",
+            row.get("account_opening_date") or "Nil",
+            row.get("scheme_code") or "Nil",
+            row.get("scheme_type") or "Nil",
+            row.get("transaction_id") or "Nil",
+            row.get("transaction_amount") or "Nil",
+            row.get("fund_transfer_date") or "Nil",
+            row.get("payment_status") or "Nil",
+            row.get("failed_reason") or "Nil",
+            row.get("cif_creation_date") or "Nil",
+            row.get("address") or "Nil",
+            row.get("api_response") or "Nil",
+            row.get("modified") or "Nil",
+        ])
 
-    return export_rows
+    csv_content = output.getvalue()
+    output.close()
+
+    filename = f"share-tracker-{(view or 'all').lower()}.csv"
+
+    frappe.response["type"] = "download"
+    frappe.response["filename"] = filename
+    frappe.response["filecontent"] = csv_content
+    frappe.response["content_type"] = "text/csv"
