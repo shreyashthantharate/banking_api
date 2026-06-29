@@ -4,12 +4,14 @@ from frappe.utils import cint
 
 import csv
 import io
+import os
+import uuid
 
 import json
 import frappe
 from frappe import _
 from frappe.utils import cint
-from frappe.utils import nowdate
+from frappe.utils import nowdate, now_datetime, get_site_path
 
 ALLOWED_ROLE = "Share Admin"
 CACHE_TTL = 20
@@ -1263,7 +1265,7 @@ def row_matches_view(row, view):
         return cint(row.get("account_closed")) == 1
     if view == "frozen":
         return cint(row.get("account_frozen")) == 1
-    if view == "notfound":
+    if view == "not_found":
         return cint(row.get("account_not_found")) == 1
     if view == "today":
         return False
@@ -1356,3 +1358,329 @@ def download_share_tracker_csv(
     frappe.response["filename"] = filename
     frappe.response["filecontent"] = csv_content
     frappe.response["content_type"] = "text/csv"
+
+
+@frappe.whitelist()
+def enqueue_share_tracker_export(
+    view="all",
+    search=None,
+    sol_ids=None,
+    from_date=None,
+    to_date=None,
+    sort_by="modified",
+    sort_order="desc",
+):
+    validate_share_tracker_access()
+
+    if isinstance(sol_ids, str):
+        try:
+            sol_ids = json.loads(sol_ids)
+        except Exception:
+            sol_ids = []
+
+    sol_ids = sol_ids or []
+    export_id = str(uuid.uuid4())
+
+    payload = {
+        "status": "Queued",
+        "progress": 0,
+        "file_url": None,
+        "error": None,
+        "created_by": frappe.session.user,
+        "created_at": str(now_datetime()),
+        "filters": {
+            "view": view,
+            "search": search,
+            "sol_ids": sol_ids,
+            "from_date": from_date,
+            "to_date": to_date,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
+        }
+    }
+
+    _cache().set_value(
+        f"share_tracker::export::{export_id}",
+        payload,
+        expires_in_sec=6 * 60 * 60
+    )
+
+    frappe.enqueue(
+        "banking_api.www.share_tracker.run_share_tracker_export",
+        queue="long",
+        timeout=60 * 60,
+        export_id=export_id,
+        view=view,
+        search=search,
+        sol_ids=sol_ids,
+        from_date=from_date,
+        to_date=to_date,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        user=frappe.session.user
+    )
+
+    return {
+        "export_id": export_id,
+        "status": "Queued"
+    }
+
+
+def _export_cache_key(export_id):
+    return f"share_tracker::export::{export_id}"
+
+
+def _set_export_status(export_id, data):
+    existing = _cache().get_value(_export_cache_key(export_id)) or {}
+    existing.update(data or {})
+    _cache().set_value(
+        _export_cache_key(export_id),
+        existing,
+        expires_in_sec=6 * 60 * 60
+    )
+    return existing
+
+
+def _get_export_status_payload(export_id):
+    return _cache().get_value(_export_cache_key(export_id)) or {}
+
+
+@frappe.whitelist()
+def get_share_tracker_export_status(export_id):
+    validate_share_tracker_access()
+
+    if not export_id:
+        frappe.throw(_("Export ID is required"))
+
+    data = _get_export_status_payload(export_id)
+    if not data:
+        return {
+            "status": "Not Found",
+            "progress": 0,
+            "file_url": None,
+            "error": "Export status not found or expired"
+        }
+
+    return data
+
+
+def run_share_tracker_export(
+    export_id,
+    view="all",
+    search=None,
+    sol_ids=None,
+    from_date=None,
+    to_date=None,
+    sort_by="modified",
+    sort_order="desc",
+    user=None
+):
+    frappe.set_user(user or "Administrator")
+    _set_export_status(export_id, {
+        "status": "Running",
+        "progress": 5,
+        "started_at": str(now_datetime()),
+        "error": None
+    })
+
+    try:
+        if isinstance(sol_ids, str):
+            try:
+                sol_ids = json.loads(sol_ids)
+            except Exception:
+                sol_ids = []
+        sol_ids = sol_ids or []
+
+        file_name = f"share-tracker-{export_id}.csv"
+        private_dir = get_site_path("private", "files")
+        os.makedirs(private_dir, exist_ok=True)
+        file_path = os.path.join(private_dir, file_name)
+
+        headers = [
+            "SOL ID",
+            "SOL Description",
+            "Customer Name",
+            "CIF",
+            "Account Number",
+            "Account Opening Date",
+            "Scheme Code",
+            "Scheme Type",
+            "Transaction ID",
+            "Transaction Amount",
+            "Fund Transfer Date",
+            "Payment Status",
+            "Failed Reason",
+            "CIF Creation Date",
+            "Address",
+            "API Response",
+            "Modified",
+        ]
+
+        batch_size = 5000
+        offset = 0
+        total_written = 0
+
+        with open(file_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+
+            while True:
+                rows = get_share_tracker_export_rows_batch(
+                    view=view,
+                    search=search,
+                    sol_ids=sol_ids,
+                    from_date=from_date,
+                    to_date=to_date,
+                    sort_by=sort_by,
+                    sort_order=sort_order,
+                    start=offset,
+                    page_length=batch_size
+                )
+
+                if not rows:
+                    break
+
+                for row in rows:
+                    writer.writerow([
+                        row.get("sol_id") or "Nil",
+                        row.get("sol_desc") or "Nil",
+                        row.get("customer_name") or "Nil",
+                        row.get("cif") or "Nil",
+                        row.get("account_number") or "Nil",
+                        row.get("account_opening_date") or "Nil",
+                        row.get("scheme_code") or "Nil",
+                        row.get("scheme_type") or "Nil",
+                        row.get("transaction_id") or "Nil",
+                        row.get("transaction_amount") or "Nil",
+                        row.get("fund_transfer_date") or "Nil",
+                        row.get("payment_status") or "Nil",
+                        row.get("failed_reason") or "Nil",
+                        row.get("cif_creation_date") or "Nil",
+                        row.get("address") or "Nil",
+                        row.get("api_response") or "Nil",
+                        row.get("modified") or "Nil",
+                    ])
+
+                total_written += len(rows)
+                offset += batch_size
+
+                _set_export_status(export_id, {
+                    "status": "Running",
+                    "progress": min(95, 5 + (offset // batch_size)),
+                    "rows_written": total_written
+                })
+
+        file_doc = frappe.get_doc({
+            "doctype": "File",
+            "file_name": file_name,
+            "file_url": f"/private/files/{file_name}",
+            "is_private": 1
+        })
+        file_doc.insert(ignore_permissions=True)
+
+        _set_export_status(export_id, {
+            "status": "Completed",
+            "progress": 100,
+            "rows_written": total_written,
+            "file_url": file_doc.file_url,
+            "file_name": file_name,
+            "completed_at": str(now_datetime())
+        })
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "Share Tracker Export Failed")
+        _set_export_status(export_id, {
+            "status": "Failed",
+            "progress": 100,
+            "error": frappe.get_traceback()
+        })
+        raise
+
+
+def get_share_tracker_export_rows_batch(
+    view="all",
+    search=None,
+    sol_ids=None,
+    from_date=None,
+    to_date=None,
+    sort_by="modified",
+    sort_order="desc",
+    start=0,
+    page_length=5000,
+):
+    allowed_sort_fields = {
+        "sol_id": "sa.sol_id",
+        "cif_creation_date": "sa.cif_creation_date",
+        "fund_transfer_date": "sa.fund_transfer_date",
+        "modified": "sa.modified",
+    }
+    sort_column = allowed_sort_fields.get(sort_by, "sa.modified")
+    sort_direction = "ASC" if str(sort_order).lower() == "asc" else "DESC"
+
+    conditions = []
+    values = {
+        "start": cint(start),
+        "page_length": cint(page_length),
+    }
+
+    if search:
+        conditions.append("""
+            (
+                sa.sol_id LIKE %(search)s
+                OR CAST(sa.cif AS CHAR) LIKE %(search)s
+                OR CAST(sa.account_number AS CHAR) LIKE %(search)s
+                OR sa.transaction_id LIKE %(search)s
+                OR sa.customer_name LIKE %(search)s
+            )
+        """)
+        values["search"] = f"%{search.strip()}%"
+
+    if sol_ids:
+        conditions.append("sa.sol_id IN %(sol_ids)s")
+        values["sol_ids"] = tuple(sol_ids)
+
+    if from_date:
+        conditions.append("DATE(sa.fund_transfer_date) >= %(from_date)s")
+        values["from_date"] = from_date
+
+    if to_date:
+        conditions.append("DATE(sa.fund_transfer_date) <= %(to_date)s")
+        values["to_date"] = to_date
+
+    where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+    query = f"""
+        SELECT
+            sa.name,
+            sa.sol_id,
+            IFNULL(sb.branch, '') AS sol_desc,
+            IFNULL(sa.customer_name, '') AS customer_name,
+            sa.cif,
+            sa.account_number,
+            sa.account_opening_date,
+            IFNULL(sa.scheme_code, '') AS scheme_code,
+            IFNULL(sa.scheme_type, '') AS scheme_type,
+            IFNULL(sa.transaction_id, '') AS transaction_id,
+            sa.transaction_amount,
+            sa.fund_transfer_date,
+            IFNULL(sa.payment_status, '') AS payment_status,
+            IFNULL(sa.insufficient_balance, 0) AS insufficient_balance,
+            IFNULL(sa.account_closed, 0) AS account_closed,
+            IFNULL(sa.account_frozen, 0) AS account_frozen,
+            IFNULL(sa.account_not_found, 0) AS account_not_found,
+            sa.cif_creation_date,
+            IFNULL(sa.address, '') AS address,
+            IFNULL(sa.error_log, '') AS api_response,
+            sa.modified
+        FROM `tabShare Application` sa
+        LEFT JOIN `tabSahayog Branch` sb
+            ON sb.sol_id = sa.sol_id
+        WHERE {where_clause}
+        ORDER BY {sort_column} {sort_direction}
+        LIMIT %(start)s, %(page_length)s
+    """
+
+    rows = frappe.db.sql(query, values, as_dict=True)
+    rows = [attach_failed_reason(row) for row in rows]
+    rows = [row for row in rows if row_matches_view(row, view)]
+    return rows

@@ -1934,6 +1934,378 @@
                 transform: scale(1);
             }
         }
+
+        /* ─── PANEL STYLE RECORD MODAL ─── */
+        .record-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(12, 12, 16, 0.72);
+            backdrop-filter: blur(10px);
+        }
+
+        .record-modal-overlay.show {
+            display: flex;
+        }
+
+        .record-modal {
+            width: min(1040px, 96vw);
+            max-height: 94vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: #18181c;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.58);
+        }
+
+        .record-modal-head {
+            padding: 18px 22px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+        }
+
+        .record-modal-head-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .record-modal-title {
+            font-size: 30px;
+            line-height: 1.2;
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            max-width: 760px;
+        }
+
+        .record-modal-sub {
+            margin-top: 8px;
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .record-modal-sub span::after {
+            content: "•";
+            margin-left: 10px;
+            color: var(--text-tertiary);
+        }
+
+        .record-modal-sub span:last-child::after {
+            display: none;
+        }
+
+        .record-modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .record-modal-meta {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 10px 18px;
+            align-items: center;
+            max-width: 720px;
+        }
+
+        .record-meta-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .record-meta-value {
+            font-size: 13.5px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .record-meta-value.mono {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12.5px;
+        }
+
+        .record-chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .record-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .record-chip.success {
+            background: var(--green-dim);
+            color: var(--green);
+            border-color: rgba(34, 197, 94, 0.16);
+        }
+
+        .record-chip.pending {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border-color: rgba(245, 158, 11, 0.16);
+        }
+
+        .record-chip.failed {
+            background: var(--red-dim);
+            color: var(--red);
+            border-color: rgba(239, 68, 68, 0.16);
+        }
+
+        .record-chip.neutral {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+        }
+
+        .record-tabs {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .record-tab {
+            position: relative;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            font-family: var(--font);
+            padding: 14px 0 13px;
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+
+        .record-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .record-tab.active {
+            color: var(--text-primary);
+        }
+
+        .record-tab.active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 2px;
+            border-radius: 2px;
+            background: var(--accent);
+        }
+
+        .record-modal-body {
+            overflow: auto;
+            padding: 0;
+            background: #18181c;
+        }
+
+        .record-panel {
+            display: none;
+            padding: 18px 22px 22px;
+        }
+
+        .record-panel.active {
+            display: block;
+        }
+
+        .record-kv-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 28px;
+        }
+
+        .record-kv-col {
+            min-width: 0;
+        }
+
+        .record-kv-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 14px;
+            align-items: start;
+            padding: 11px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .record-kv-row:first-child {
+            padding-top: 0;
+        }
+
+        .record-kv-label {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+        }
+
+        .record-kv-value {
+            font-size: 13.5px;
+            line-height: 1.45;
+            color: var(--text-primary);
+            min-width: 0;
+            word-break: break-word;
+        }
+
+        .record-kv-value.mono {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12.5px;
+        }
+
+        .record-inline-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .record-large-block {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        .record-large-block-title {
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .record-large-block-text {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .record-pre {
+            margin: 0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.55;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 320px;
+            overflow: auto;
+        }
+
+        .record-empty,
+        .record-loading,
+        .record-error {
+            padding: 26px 22px;
+            font-size: 13px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .record-error {
+            color: var(--red);
+        }
+
+        @media (max-width: 860px) {
+            .record-modal {
+                width: min(100%, 100vw);
+            }
+
+            .record-modal-title {
+                font-size: 22px;
+                max-width: none;
+            }
+
+            .record-modal-head-top {
+                flex-direction: column;
+            }
+
+            .record-modal-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .record-modal-meta {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .record-kv-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .record-modal-overlay {
+                padding: 0;
+            }
+
+            .record-modal {
+                width: 100vw;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .record-modal-head,
+            .record-panel {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .record-tabs {
+                padding: 0 16px;
+                gap: 14px;
+                overflow-x: auto;
+            }
+
+            .record-kv-row {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+        }
+
+        .record-chip.network {
+            background: rgba(59, 130, 246, 0.14);
+            color: #60a5fa;
+            border-color: rgba(96, 165, 250, 0.18);
+        }
+
+        .pill-network {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .pill-network::before {
+            background: #60a5fa;
+        }
     </style>
 </head>
 
@@ -2457,14 +2829,58 @@
             return num.toLocaleString("en-US");
         }
 
+        function resolveStatusContext(row) {
+            const paymentStatus = String(
+                row.payment_status ?? row.paymentstatus ?? ""
+            ).trim();
+
+            const insufficientBalance = cintLike(
+                row.insufficient_balance ?? row.insufficientbalance
+            );
+
+            const accountClosed = cintLike(
+                row.account_closed ?? row.accountclosed
+            );
+
+            const accountFrozen = cintLike(
+                row.account_frozen ?? row.accountfrozen
+            );
+
+            const accountNotFound = cintLike(
+                row.account_not_found ?? row.accountnotfound
+            );
+
+            return {
+                paymentStatus,
+                insufficientBalance,
+                accountClosed,
+                accountFrozen,
+                accountNotFound
+            };
+        }
+
+        // function getStatusKey(row) {
+        //     if (String(row.payment_status || "").trim() === "Success") return "success";
+        //     if (cintLike(row.insufficient_balance) === 1) return "insuf";
+        //     if (cintLike(row.account_closed) === 1) return "closed";
+        //     if (cintLike(row.account_frozen) === 1) return "frozen";
+        //     if (cintLike(row.account_not_found) === 1) return "not_found";
+        //     if (String(row.payment_status || "").trim() === "Pending") return "pending";
+        //     if (String(row.payment_status || "").trim() === "Failed") return "network_issue";
+        //     return "unknown";
+        // }
+
         function getStatusKey(row) {
-            if (String(row.payment_status || "").trim() === "Success") return "success";
-            if (cintLike(row.insufficient_balance) === 1) return "insuf";
-            if (cintLike(row.account_closed) === 1) return "closed";
-            if (cintLike(row.account_frozen) === 1) return "frozen";
-            if (cintLike(row.account_not_found) === 1) return "not_found";
-            if (String(row.payment_status || "").trim() === "Pending") return "pending";
-            if (String(row.payment_status || "").trim() === "Failed") return "failed";
+            const s = resolveStatusContext(row);
+
+            if (s.paymentStatus === "Success") return "success";
+            if (s.insufficientBalance === 1) return "insuf";
+            if (s.accountClosed === 1) return "closed";
+            if (s.accountFrozen === 1) return "frozen";
+            if (s.accountNotFound === 1) return "notfound";
+            if (s.paymentStatus === "Pending") return "pending";
+            if (s.paymentStatus === "Failed") return "network_issue";
+
             return "unknown";
         }
 
@@ -2516,53 +2932,112 @@
             return `${pad2(dt.getDate())}-${pad2(dt.getMonth() + 1)}-${dt.getFullYear()}`;
         }
 
+        // function getStatusLabel(row) {
+        //     if (String(row.payment_status || "").trim() === "Success") return "Success";
+        //     if (cintLike(row.insufficient_balance) === 1) return "Insufficient balance";
+        //     if (cintLike(row.account_closed) === 1) return "Account closed";
+        //     if (cintLike(row.account_frozen) === 1) return "Account frozen";
+        //     if (cintLike(row.account_not_found) === 1) return "Account not found";
+        //     if (String(row.payment_status || "").trim() === "Pending") return "Pending";
+        //     if (String(row.payment_status || "").trim() === "Failed") return "Network Issue";
+        //     return row.payment_status || "Unknown";
+        // }
+
         function getStatusLabel(row) {
-            if (String(row.payment_status || "").trim() === "Success") return "Success";
-            if (cintLike(row.insufficient_balance) === 1) return "Insufficient balance";
-            if (cintLike(row.account_closed) === 1) return "Account closed";
-            if (cintLike(row.account_frozen) === 1) return "Account frozen";
-            if (cintLike(row.account_not_found) === 1) return "Account not found";
-            if (String(row.payment_status || "").trim() === "Pending") return "Pending";
-            if (String(row.payment_status || "").trim() === "Failed") return "Failed";
-            return row.payment_status || "Unknown";
+            const s = resolveStatusContext(row);
+
+            if (s.paymentStatus === "Success") return "Success";
+            if (s.insufficientBalance === 1) return "Insufficient Balance";
+            if (s.accountClosed === 1) return "Account Closed";
+            if (s.accountFrozen === 1) return "Account Frozen";
+            if (s.accountNotFound === 1) return "Account Not Found";
+            if (s.paymentStatus === "Pending") return "Pending";
+            if (s.paymentStatus === "Failed") return "Network Issue";
+
+            return s.paymentStatus || "Unknown";
         }
 
-        function pillHTML(row) {
-            const key = getStatusKey(row);
-            const label = getStatusLabel(row);
+        // function pillHTML(row) {
+        //     const key = getStatusKey(row);
+        //     const label = getStatusLabel(row);
 
-            const clsMap = {
-                pending: "pill-pending",
-                insuf: "pill-insuf",
-                closed: "pill-closed",
-                frozen: "pill-frozen",
-                not_found: "pill-not-found",
-                success: "pill-success",
-                failed: "pill-insuf",
-                unknown: "pill-closed"
-            };
+        //     const clsMap = {
+        //         pending: "pill-pending",
+        //         insuf: "pill-insuf",
+        //         closed: "pill-closed",
+        //         frozen: "pill-frozen",
+        //         not_found: "pill-not-found",
+        //         success: "pill-success",
+        //         failed: "pill-insuf",
+        //         unknown: "pill-closed"
+        //     };
 
-            return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
-        }
+        //     return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
+        // }
+
+
+        // function pillHTML(row) {
+        //     const key = getStatusKey(row);
+        //     const label = getStatusLabel(row);
+
+        //     const clsMap = {
+        //         pending: "pill-pending",
+        //         insuf: "pill-insuf",
+        //         closed: "pill-closed",
+        //         frozen: "pill-frozen",
+        //         notfound: "pill-not-found",
+        //         success: "pill-success",
+        //         network_issue: "pill-network",
+        //         failed: "pill-insuf",
+        //         unknown: "pill-closed"
+        //     };
+
+        //     return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
+        // }
+
+        // function normalizeRecord(row) {
+        //     return {
+        //         name: row.name || "",
+        //         sol_id: row.sol_id || "",
+        //         sol_desc: row.sol_desc || "",
+        //         cif: row.cif != null ? String(row.cif) : "",
+        //         account_number: row.account_number != null ? String(row.account_number) : "",
+        //         transaction_id: row.transaction_id || "",
+        //         payment_status: row.payment_status || "",
+        //         insufficient_balance: cintLike(row.insufficient_balance),
+        //         account_closed: cintLike(row.account_closed),
+        //         account_frozen: cintLike(row.account_frozen),
+        //         account_not_found: cintLike(row.account_not_found),
+        //         fund_transfer_date: row.fund_transfer_date || "",
+        //         cif_creation_date: row.cif_creation_date || "",
+        //         account_opening_date: row.account_opening_date || "",
+        //         error_log: row.error_log || "",
+        //         modified: row.modified || ""
+        //     };
+        // }
 
         function normalizeRecord(row) {
             return {
-                name: row.name || "",
-                sol_id: row.sol_id || "",
-                sol_desc: row.sol_desc || "",
+                name: row.name,
+                sol_id: row.sol_id ?? row.solid ?? "",
+                sol_desc: row.sol_desc ?? row.soldesc ?? "",
                 cif: row.cif != null ? String(row.cif) : "",
-                account_number: row.account_number != null ? String(row.account_number) : "",
-                transaction_id: row.transaction_id || "",
-                payment_status: row.payment_status || "",
-                insufficient_balance: cintLike(row.insufficient_balance),
-                account_closed: cintLike(row.account_closed),
-                account_frozen: cintLike(row.account_frozen),
-                account_not_found: cintLike(row.account_not_found),
-                fund_transfer_date: row.fund_transfer_date || "",
-                cif_creation_date: row.cif_creation_date || "",
-                account_opening_date: row.account_opening_date || "",
-                error_log: row.error_log || "",
-                modified: row.modified || ""
+                account_number: row.account_number != null
+                    ? String(row.account_number)
+                    : (row.accountnumber != null ? String(row.accountnumber) : ""),
+                transaction_id: row.transaction_id ?? row.transactionid ?? "",
+                payment_status: row.payment_status ?? row.paymentstatus ?? "",
+
+                insufficient_balance: cintLike(row.insufficient_balance ?? row.insufficientbalance),
+                account_closed: cintLike(row.account_closed ?? row.accountclosed),
+                account_frozen: cintLike(row.account_frozen ?? row.accountfrozen),
+                account_not_found: cintLike(row.account_not_found ?? row.accountnotfound),
+
+                fund_transfer_date: row.fund_transfer_date ?? row.fundtransferdate ?? "",
+                cif_creation_date: row.cif_creation_date ?? row.cifcreationdate ?? "",
+                account_opening_date: row.account_opening_date ?? row.accountopeningdate ?? "",
+                error_logsahayog_dashboard: row.error_log ?? row.errorlog ?? "",
+                modified: row.modified
             };
         }
 
@@ -3329,22 +3804,106 @@
             await loadRows(true);
         }
 
-        function showExportLoader(message = "Building consolidated report and preparing download…") {
-            const overlay = document.getElementById("exportLoader");
+        // function showExportLoader(message = "Building consolidated report and preparing download…") {
+        //     const overlay = document.getElementById("exportLoader");
+        //     const text = document.getElementById("exportLoaderText");
+        //     if (text) text.textContent = message;
+        //     if (overlay) {
+        //         overlay.classList.add("show");
+        //         overlay.setAttribute("aria-hidden", "false");
+        //     }
+        // }
+
+        // function hideExportLoader() {
+        //     const overlay = document.getElementById("exportLoader");
+        //     if (overlay) {
+        //         overlay.classList.remove("show");
+        //         overlay.setAttribute("aria-hidden", "true");
+        //     }
+        // }
+
+
+        function showExportLoader(message) {
+            const loader = document.getElementById("exportLoader");
             const text = document.getElementById("exportLoaderText");
-            if (text) text.textContent = message;
-            if (overlay) {
-                overlay.classList.add("show");
-                overlay.setAttribute("aria-hidden", "false");
-            }
+            if (text) text.textContent = message || "Preparing export...";
+            if (loader) loader.classList.add("show");
         }
 
         function hideExportLoader() {
-            const overlay = document.getElementById("exportLoader");
-            if (overlay) {
-                overlay.classList.remove("show");
-                overlay.setAttribute("aria-hidden", "true");
+            const loader = document.getElementById("exportLoader");
+            if (loader) loader.classList.remove("show");
+        }
+
+        function startExportPolling(exportId) {
+            if (exportPollTimer) {
+                clearInterval(exportPollTimer);
             }
+
+            checkExportStatus(exportId);
+
+            exportPollTimer = setInterval(() => {
+                checkExportStatus(exportId);
+            }, 3000);
+        }
+
+        async function checkExportStatus(exportId) {
+            try {
+                const result = await apiCall(
+                    "banking_api.www.share_tracker.get_share_tracker_export_status",
+                    { export_id: exportId }
+                );
+
+                if (result.status === "Queued") {
+                    showExportLoader("Export queued...");
+                    return;
+                }
+
+                if (result.status === "Running") {
+                    const rowsText = result.rows_written
+                        ? ` Generated ${formatNumber(result.rows_written)} rows so far.`
+                        : "";
+                    showExportLoader(`Preparing CSV in background...${rowsText}`);
+                    return;
+                }
+
+                if (result.status === "Completed") {
+                    clearInterval(exportPollTimer);
+                    exportPollTimer = null;
+                    hideExportLoader();
+
+                    if (result.file_url) {
+                        downloadFileUrl(result.file_url);
+                    } else {
+                        alert("Export completed, but file URL is missing.");
+                    }
+                    return;
+                }
+
+                if (result.status === "Failed") {
+                    clearInterval(exportPollTimer);
+                    exportPollTimer = null;
+                    hideExportLoader();
+                    alert("Export failed. Please check error logs.");
+                    return;
+                }
+
+            } catch (e) {
+                clearInterval(exportPollTimer);
+                exportPollTimer = null;
+                hideExportLoader();
+                alert("Failed to fetch export status: " + (e.message || e));
+            }
+        }
+
+        function downloadFileUrl(url) {
+            const a = document.createElement("a");
+            a.href = url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         }
 
         function setExportButtonLoading(isLoading) {
@@ -3421,48 +3980,200 @@
         //     }
         // }
 
-        function exportFilteredCSV() {
-            setFilteredExportRunning(true);
+        // working server side download code
+        // function exportFilteredCSV() {
+        //     setFilteredExportRunning(true);
 
-            const params = new URLSearchParams({
-                view: currentTab,
-                search: searchQ || "",
-                sol_ids: selectedSolIds.size ? JSON.stringify([...selectedSolIds]) : "",
-                from_date: fromDate || "",
-                to_date: toDate || "",
+        //     const params = new URLSearchParams({
+        //         view: currentTab,
+        //         search: searchQ || "",
+        //         sol_ids: selectedSolIds.size ? JSON.stringify([...selectedSolIds]) : "",
+        //         from_date: fromDate || "",
+        //         to_date: toDate || "",
+        //         sort_by: getSortBy(),
+        //         sort_order: getSortOrder()
+        //     });
+
+        //     const url = `/api/method/banking_api.www.share_tracker.download_share_tracker_csv?${params.toString()}`;
+
+        //     const iframe = document.createElement("iframe");
+        //     iframe.style.display = "none";
+        //     iframe.src = url;
+        //     document.body.appendChild(iframe);
+
+        //     let finished = false;
+
+        //     const stopDownloadState = () => {
+        //         if (finished) return;
+        //         finished = true;
+        //         setFilteredExportRunning(false);
+        //         setTimeout(() => iframe.remove(), 8000);
+        //     };
+
+        //     iframe.onload = function () {
+        //         stopDownloadState();
+        //         if (window.frappe) {
+        //             frappe.show_alert({
+        //                 message: "Filtered report download started",
+        //                 indicator: "green"
+        //             });
+        //         }
+        //     };
+
+        //     setTimeout(() => {
+        //         stopDownloadState();
+        //     }, 15000);
+        // }
+
+
+        let activeExportPoller = null;
+
+        function getAppliedTableFilters() {
+            return {
+                view: currentTab || 'all',
+                search: (searchQ || '').trim() || null,
+                solids: Array.from(selectedSolIds || []),
+                fromdate: fromDate || null,
+                todate: toDate || null,
+                sortby: getSortBy(),
+                sortorder: getSortOrder()
+            };
+        }
+
+        function setExportButtonLoading(isLoading) {
+            const btn = document.getElementById('filteredExportBtn');
+            if (!btn) return;
+            btn.disabled = !!isLoading;
+            btn.classList.toggle('download-running', !!isLoading);
+        }
+
+        function showExportLoader(message) {
+            const overlay = document.getElementById('exportLoader');
+            const text = document.getElementById('exportLoaderText');
+            if (overlay) overlay.classList.add('show');
+            if (text) text.textContent = message || 'Preparing filtered export...';
+        }
+
+        function hideExportLoader() {
+            const overlay = document.getElementById('exportLoader');
+            if (overlay) overlay.classList.remove('show');
+        }
+
+        function getCurrentFiltersPayload() {
+            return {
+                view: currentTab || 'all',
+                search: (searchQ || '').trim() || null,
+                solids: Array.from(selectedSolIds || []),
+                fromdate: fromDate || null,
+                todate: toDate || null,
+                sortby: getSortBy(),
+                sortorder: getSortOrder()
+            };
+        }
+        function getRowFiltersPayload() {
+            return {
+                view: currentTab || 'all',
+                search: (searchQ || '').trim() || null,
+                sol_ids: Array.from(selectedSolIds || []),
+                from_date: fromDate || null,
+                to_date: toDate || null,
                 sort_by: getSortBy(),
                 sort_order: getSortOrder()
-            });
-
-            const url = `/api/method/banking_api.www.share_tracker.download_share_tracker_csv?${params.toString()}`;
-
-            const iframe = document.createElement("iframe");
-            iframe.style.display = "none";
-            iframe.src = url;
-            document.body.appendChild(iframe);
-
-            let finished = false;
-
-            const stopDownloadState = () => {
-                if (finished) return;
-                finished = true;
-                setFilteredExportRunning(false);
-                setTimeout(() => iframe.remove(), 8000);
             };
+        }
+        async function exportFilteredCSV() {
+            try {
+                const payload = {
+                    view: currentTab || 'all',
+                    search: (searchQ || '').trim() || null,
+                    sol_ids: Array.from(selectedSolIds || []),
+                    from_date: fromDate || null,
+                    to_date: toDate || null,
+                    sort_by: getSortBy(),
+                    sort_order: getSortOrder()
+                };
 
-            iframe.onload = function () {
-                stopDownloadState();
-                if (window.frappe) {
-                    frappe.show_alert({
-                        message: "Filtered report download started",
-                        indicator: "green"
-                    });
+                console.log('Export payload:', JSON.stringify(payload));
+                console.log('selectedSolIds', Array.from(selectedSolIds || []));
+                console.log('fromDate', fromDate, 'toDate', toDate);
+                console.log('method', 'banking_api.www.share_tracker.enqueue_share_tracker_export');
+                console.log('payload', payload);
+
+                setExportButtonLoading(true);
+                showExportLoader('Preparing filtered report and download...');
+
+                const enqueueRes = await apiCall(
+                    'banking_api.www.share_tracker.enqueue_share_tracker_export',
+                    payload
+                );
+
+                const exportId = enqueueRes && enqueueRes.export_id;
+                if (!exportId) {
+                    throw new Error('Export ID not returned');
                 }
-            };
 
-            setTimeout(() => {
-                stopDownloadState();
-            }, 15000);
+                if (window.activeExportPoller) {
+                    clearInterval(window.activeExportPoller);
+                    window.activeExportPoller = null;
+                }
+
+                window.activeExportPoller = setInterval(async () => {
+                    try {
+                        const status = await apiCall(
+                            'banking_api.www.share_tracker.get_share_tracker_export_status',
+                            { export_id: exportId }
+                        );
+
+                        const text = document.getElementById('exportLoaderText');
+                        if (text) {
+                            const progress = Number(status.progress || 0);
+                            const rowsWritten = Number(status.rows_written || 0);
+                            text.textContent = rowsWritten
+                                ? `${status.status || 'Running'} ${progress}% • ${rowsWritten.toLocaleString('en-US')} rows`
+                                : `${status.status || 'Running'} ${progress}%`;
+                        }
+
+                        if (status.status === 'Completed') {
+                            clearInterval(window.activeExportPoller);
+                            window.activeExportPoller = null;
+                            hideExportLoader();
+                            setExportButtonLoading(false);
+
+                            const fileUrl = status.file_url;
+                            if (!fileUrl) {
+                                throw new Error('Export completed but file URL is missing');
+                            }
+
+                            window.open(fileUrl, '_blank', 'noopener,noreferrer');
+                            return;
+                        }
+
+                        if (status.status === 'Failed' || status.status === 'Not Found') {
+                            clearInterval(window.activeExportPoller);
+                            window.activeExportPoller = null;
+                            hideExportLoader();
+                            setExportButtonLoading(false);
+                            throw new Error(status.error || 'Export failed');
+                        }
+                    } catch (err) {
+                        clearInterval(window.activeExportPoller);
+                        window.activeExportPoller = null;
+                        hideExportLoader();
+                        setExportButtonLoading(false);
+                        throw err;
+                    }
+                }, 2000);
+
+            } catch (err) {
+                hideExportLoader();
+                setExportButtonLoading(false);
+                console.error(err);
+                if (window.frappe && frappe.msgprint) {
+                    frappe.msgprint(err.message || 'Export failed');
+                } else {
+                    alert(err.message || 'Export failed');
+                }
+            }
         }
 
         function csvSafe(val) {
@@ -3470,71 +4181,159 @@
             return `"${str.replace(/"/g, '""')}"`;
         }
 
+
         function ensureModal() {
             if (document.getElementById("recordDetailOverlay")) return;
 
             const modalHtml = `
-            <div id="recordDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;align-items:center;justify-content:center;padding:24px;">
-                <div id="recordDetailModal" style="width:min(920px,100%);max-height:90vh;overflow:hidden;background:var(--bg-card);border:1px solid var(--border-md);border-radius:var(--radius-xl);box-shadow:0 20px 60px rgba(0,0,0,.55);display:flex;flex-direction:column;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);background:var(--bg-surface);gap:16px;">
-    <div>
-        <div style="font-size:18px;font-weight:600;color:var(--text-primary);">Share Application Details</div>
-        <div id="recordDetailSub" style="font-size:12px;color:var(--text-secondary);margin-top:2px;">Loading...</div>
-    </div>
+        <div id="recordDetailOverlay" class="record-modal-overlay">
+            <div id="recordDetailModal" class="record-modal" role="dialog" aria-modal="true" aria-labelledby="recordDetailTitle">
+                <div class="record-modal-head">
+                    <div class="record-modal-head-top">
+                        <div>
+                            <div id="recordDetailTitle" class="record-modal-title">Share Application</div>
+                            <div id="recordDetailSub" class="record-modal-sub"></div>
+                        </div>
 
-    <div style="display:flex;align-items:center;gap:10px;">
-        <button
-            id="printShareCertBtn"
-            onclick="openShareCertificateModal()"
-            style="height:36px;padding:0 14px;border:1px solid var(--accent);border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500;display:none;align-items:center;gap:8px;transition:background .15s,border-color .15s,opacity .15s;"
-            onmouseover="this.style.background='var(--accent-hover)';this.style.borderColor='var(--accent-hover)'"
-            onmouseout="this.style.background='var(--accent)';this.style.borderColor='var(--accent)'"
-        >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 9V2h12v7"></path>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Print Share Certificate
-        </button>
+                        <div class="record-modal-actions">
+                            <button
+                                id="printShareCertBtn"
+                                class="btn btn-primary"
+                                onclick="openShareCertificateModal()"
+                                style="display:none;"
+                            >
+                                Print Share Certificate
+                            </button>
 
-        <button
-            onclick="closeRecordModal()"
-            aria-label="Close"
-            style="width:34px;height:34px;border:none;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);cursor:pointer;"
-        >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
-    </div>
-</div>
-                    <div id="recordDetailBody" style="padding:20px;overflow:auto;"></div>
+                            <button onclick="closeRecordModal()" class="icon-btn" aria-label="Close details">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="recordMetaTop" class="record-modal-meta"></div>
+                </div>
+
+                <div class="record-tabs">
+                    <button class="record-tab active" data-panel="details" onclick="switchRecordPanel('details', this)">Details</button>
+                    <button style="display:none;" class="record-tab" data-panel="flags" onclick="switchRecordPanel('flags', this)">Failure Flags</button>
+                    <button class="record-tab" data-panel="address" onclick="switchRecordPanel('address', this)">Address</button>
+                    <button class="record-tab" data-panel="logs" onclick="switchRecordPanel('logs', this)">API Response</button>
+                </div>
+
+                <div class="record-modal-body">
+                    <div id="recordPanelDetails" class="record-panel active"></div>
+                    <div id="recordPanelFlags" class="record-panel"></div>
+                    <div id="recordPanelAddress" class="record-panel"></div>
+                    <div id="recordPanelLogs" class="record-panel"></div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
             document.body.insertAdjacentHTML("beforeend", modalHtml);
+
             const overlay = document.getElementById("recordDetailOverlay");
             overlay.addEventListener("click", function (e) {
                 if (e.target === overlay) closeRecordModal();
             });
         }
 
+        function switchRecordPanel(panel, btn) {
+            document.querySelectorAll(".record-tab").forEach(el => el.classList.remove("active"));
+            document.querySelectorAll(".record-panel").forEach(el => el.classList.remove("active"));
+
+            if (btn) btn.classList.add("active");
+
+            const target = document.getElementById(
+                panel === "details" ? "recordPanelDetails" :
+                    panel === "flags" ? "recordPanelFlags" :
+                        panel === "address" ? "recordPanelAddress" :
+                            "recordPanelLogs"
+            );
+
+            if (target) target.classList.add("active");
+        }
+
+        function kvRow(label, value, opts = {}) {
+            return `
+        <div class="record-kv-row">
+            <div class="record-kv-label">${escapeHtml(label)}</div>
+            <div class="record-kv-value ${opts.mono ? "mono" : ""}">${escapeHtml(value || "-")}</div>
+        </div>
+    `;
+        }
+
+        function topMetaRow(label, valueHtml) {
+            return `
+        <div class="record-meta-label">${escapeHtml(label)}</div>
+        <div class="record-meta-value">${valueHtml}</div>
+    `;
+        }
+
+        // function statusChipFromDoc(doc) {
+        //     const key = getStatusKey(doc);
+        //     const label = getStatusLabel(doc);
+        //     const cls = key === "success"
+        //         ? "success"
+        //         : key === "pending"
+        //             ? "pending"
+        //             : (key === "insuf" || key === "closed" || key === "frozen" || key === "notfound" || key === "failed")
+        //                 ? "failed"
+        //                 : "neutral";
+
+        //     return `<span class="record-chip ${cls}">${escapeHtml(label)}</span>`;
+        // }
+
+        function statusChipFromDoc(doc) {
+            const key = getStatusKey(doc);
+            const label = getStatusLabel(doc);
+
+            const cls =
+                key === "success" ? "success" :
+                    key === "pending" ? "pending" :
+                        key === "network_issue" ? "network" :
+                            (key === "insuf" || key === "closed" || key === "frozen" || key === "notfound" || key === "failed")
+                                ? "failed"
+                                : "neutral";
+
+            return `<span class="record-chip ${cls}">${escapeHtml(label)}</span>`;
+        }
+
+        function flagPill(label, active) {
+            return `<span class="record-chip ${active ? "failed" : "neutral"}">${escapeHtml(label)}: ${active ? "Yes" : "No"}</span>`;
+        }
+
+
         async function openRecordModal(cif) {
             ensureModal();
 
             const overlay = document.getElementById("recordDetailOverlay");
             const sub = document.getElementById("recordDetailSub");
-            const body = document.getElementById("recordDetailBody");
+            const metaTop = document.getElementById("recordMetaTop");
+            const detailsPanel = document.getElementById("recordPanelDetails");
+            const flagsPanel = document.getElementById("recordPanelFlags");
+            const addressPanel = document.getElementById("recordPanelAddress");
+            const logsPanel = document.getElementById("recordPanelLogs");
             const printBtn = document.getElementById("printShareCertBtn");
 
-            overlay.style.display = "flex";
-            sub.textContent = "Fetching record details...";
-            body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-secondary);">Loading details...</div>`;
-
+            overlay.classList.add("show");
             currentRecordDetail = null;
+
+            document.querySelectorAll(".record-tab").forEach(el => el.classList.remove("active"));
+            document.querySelector('.record-tab[data-panel="details"]')?.classList.add("active");
+            document.querySelectorAll(".record-panel").forEach(el => el.classList.remove("active"));
+            detailsPanel.classList.add("active");
+
+            sub.innerHTML = `<span>Loading details...</span>`;
+            metaTop.innerHTML = "";
+            detailsPanel.innerHTML = `<div class="record-loading">Loading details...</div>`;
+            flagsPanel.innerHTML = "";
+            addressPanel.innerHTML = "";
+            logsPanel.innerHTML = "";
             if (printBtn) printBtn.style.display = "none";
 
             try {
@@ -3543,68 +4342,86 @@
                 });
 
                 if (!doc) {
-                    sub.textContent = "Record not found";
-                    body.innerHTML = `<div style="color:var(--text-secondary);">No details found for CIF ${escapeHtml(decodeURIComponent(cif))}</div>`;
+                    sub.innerHTML = `<span>Record not found</span>`;
+                    detailsPanel.innerHTML = `<div class="record-empty">No details found for CIF ${escapeHtml(decodeURIComponent(cif))}</div>`;
                     return;
                 }
 
-                // currentRecordDetail = normalizeRecord(doc);
-                // currentRecordDetail.sol_desc = doc.sol_desc || "-";
-                currentRecordDetail = {
-                    ...doc,
-                    cif: doc.cif != null ? String(doc.cif) : "",
-                    account_number: doc.account_number != null ? String(doc.account_number) : "",
-                    sol_desc: doc.sol_desc || "-"
-                };
+                currentRecordDetail = doc;
 
-                sub.textContent = `CIF ${doc.cif || "-"} · ${doc.name || "-"}`;
+                sub.innerHTML = `
+            <span>${escapeHtml(doc.name || "-")}</span>
+            <span>CIF ${escapeHtml(doc.cif || "-")}</span>
+            <span>A/C ${escapeHtml(doc.account_number || "-")}</span>
+        `;
+
+                metaTop.innerHTML = `
+            ${topMetaRow("Status", statusChipFromDoc(doc))}
+            ${topMetaRow("SOL / Branch", `<span class="mono">${escapeHtml(doc.sol_id || "-")}</span><span>${escapeHtml(doc.sol_desc || "-")}</span>`)}
+            ${topMetaRow("Transaction ID", `<span class="record-meta-value mono">${escapeHtml(doc.transaction_id || "-")}</span>`)}
+            ${topMetaRow("Scheme", `<span>${escapeHtml(doc.scheme_type || "-")} / ${escapeHtml(doc.scheme_code || "-")}</span>`)}
+            ${topMetaRow("Dates", `<span>${escapeHtml(formatDate(doc.cif_creation_date))}</span><span> · </span><span>Txn ${escapeHtml(formatDateTime(doc.fund_transfer_date))}</span>`)}
+        `;
 
                 if (printBtn && String(doc.payment_status || "").trim() === "Success") {
                     printBtn.style.display = "inline-flex";
                 }
 
-                body.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;">
-        ${detailCard("Application ID", doc.name)}
-        ${detailCard("SOL ID", doc.sol_id)}
-        ${detailCard("SOL Description", doc.sol_desc || "-")}
-        ${detailCard("CIF", doc.cif)}
-        ${detailCard("Customer Name", doc.customer_name || "-")}
-        ${detailCard("Account Number", doc.account_number)}
-        ${detailCard("Transaction ID", doc.transaction_id || "-")}
-        ${detailCard("Payment Status", doc.payment_status || "-")}
-        ${detailCard("Insufficient Balance", cintLike(doc.insufficient_balance) ? "Yes" : "No")}
-        ${detailCard("Account Closed", cintLike(doc.account_closed) ? "Yes" : "No")}
-        ${detailCard("Account Frozen", cintLike(doc.account_frozen) ? "Yes" : "No")}
-        ${detailCard("Account Not Found", cintLike(doc.account_not_found) ? "Yes" : "No")}
-        ${detailCard("Retry Attempted", doc.retry_attempted ?? 0)}
-        ${detailCard("Last Retry Attempted", formatDateTime(doc.last_retry_attempted))}
-        ${detailCard("Fund Transfer Date", formatDateTime(doc.fund_transfer_date))}
-        ${detailCard("CIF Creation Date", formatDate(doc.cif_creation_date))}
-        ${detailCard("Account Opening Date", formatDate(doc.account_opening_date))}
-        ${detailCard("Scheme Type", doc.scheme_type || "-")}
-        ${detailCard("Scheme Code", doc.scheme_code || "-")}
-        ${detailCard("Transaction Amount", doc.transaction_amount != null ? formatNumber(doc.transaction_amount) : "-")}
-        ${detailCard("Modified", formatDateTime(doc.modified))}
-    </div>
+                detailsPanel.innerHTML = `
+            <div class="record-kv-grid">
+                <div class="record-kv-col">
+                    ${kvRow("Application ID", doc.name, { mono: true })}
+                    ${kvRow("CIF", doc.cif, { mono: true })}
+                    ${kvRow("Customer Name", doc.customer_name || "-")}
+                    ${kvRow("SOL ID", doc.sol_id || "-", { mono: true })}
+                    ${kvRow("SOL Description", doc.sol_desc || "-")}
+                    ${kvRow("Scheme Type", doc.scheme_type || "-")}
+                    ${kvRow("Scheme Code", doc.scheme_code || "-")}
+                </div>
 
-    <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Address</div>
-        <div style="font-size:14px;color:var(--text-primary);line-height:1.7;white-space:pre-wrap;word-break:break-word;">
-            ${escapeHtml(doc.address || "-")}
-        </div>
-    </div>
+                <div class="record-kv-col">
+                    ${kvRow("Account Number", doc.account_number || "-", { mono: true })}
+                    ${kvRow("Transaction ID", doc.transaction_id || "-", { mono: true })}
+                    ${kvRow("Payment Status", getStatusLabel(doc))}
+                    ${kvRow("Fund Transfer Date", formatDateTime(doc.fund_transfer_date))}
+                    ${kvRow("CIF Creation Date", formatDate(doc.cif_creation_date))}
+                    ${kvRow("Account Opening Date", formatDate(doc.account_opening_date))}
+                    ${kvRow("Modified", formatDateTime(doc.modified))}
+                </div>
+            </div>
+        `;
 
-    <div style="margin-top:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;">
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">API Response</div>
-        <pre style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6;color:var(--text-primary);font-family:'SF Mono','Fira Code',monospace;">${escapeHtml(doc.error_log || "-")}</pre>
-    </div>
-`;
+                flagsPanel.innerHTML = `
+            <div class="record-large-block">
+                <div class="record-large-block-title">Failure markers</div>
+                <div class="record-inline-pills">
+                    ${flagPill("Insufficient Balance", cintLike(doc.insufficient_balance) === 1)}
+                    ${flagPill("Account Closed", cintLike(doc.account_closed) === 1)}
+                    ${flagPill("Account Frozen", cintLike(doc.account_frozen) === 1)}
+                    ${flagPill("Account Not Found", cintLike(doc.account_not_found) === 1)}
+                </div>
+            </div>
+        `;
+
+                addressPanel.innerHTML = `
+            <div class="record-large-block">
+                <div class="record-large-block-title">Registered address</div>
+                <div class="record-large-block-text">${escapeHtml(doc.address || "-")}</div>
+            </div>
+        `;
+
+                logsPanel.innerHTML = `
+            <div class="record-large-block">
+                <div class="record-large-block-title">API response / error log</div>
+                <pre class="record-pre">${escapeHtml(doc.error_log || "-")}</pre>
+            </div>
+        `;
             } catch (e) {
-                sub.textContent = "Error";
-                body.innerHTML = `<div style="color:var(--red);">Unable to fetch record details.</div>`;
+                sub.innerHTML = `<span>Error loading record</span>`;
+                detailsPanel.innerHTML = `<div class="record-error">Unable to fetch record details.</div>`;
             }
         }
+
 
         function ensureShareCertificateModal() {
             if (document.getElementById("shareCertificateOverlay")) return;
@@ -3665,13 +4482,27 @@
             });
         }
 
-        function detailCard(label, value) {
+        function detailCard(label, value, opts = {}) {
+            const cardClasses = ["detail-card"];
+            if (opts.span === 2) cardClasses.push("span-2");
+            if (opts.span === 3) cardClasses.push("span-3");
+            if (opts.top) cardClasses.push("top-highlight");
+
             return `
-            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;">
-                <div style="font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">${escapeHtml(label)}</div>
-                <div style="font-size:14px;color:var(--text-primary);font-weight:500;word-break:break-word;">${escapeHtml(value || "-")}</div>
-            </div>
-        `;
+        <div class="${cardClasses.join(" ")}">
+            <div class="detail-label">${escapeHtml(label)}</div>
+            <div class="detail-value ${opts.mono ? "mono" : ""}">${escapeHtml(value || "-")}</div>
+        </div>
+    `;
+        }
+
+        function flagChip(label, active) {
+            return `
+        <div class="flag-chip">
+            <span class="flag-chip-label">${escapeHtml(label)}</span>
+            <span class="flag-chip-val ${active ? "yes" : "no"}">${active ? "Yes" : "No"}</span>
+        </div>
+    `;
         }
 
         function closeShareCertificateModal() {
@@ -3840,7 +4671,7 @@
 
         function closeRecordModal() {
             const overlay = document.getElementById("recordDetailOverlay");
-            if (overlay) overlay.style.display = "none";
+            if (overlay) overlay.classList.remove("show");
         }
 
         function bindExistingTabButtons() {
@@ -3988,7 +4819,7 @@
                 insuf: "insuf",
                 closed: "closed",
                 frozen: "frozen",
-                notfound: "notfound"
+                not_found: "not_found"
             };
             return map[reportType] || "all";
         }
@@ -4103,64 +4934,102 @@
         //     }
         // }
 
-        function downloadExportFromModal() {
-            const reportType = getSelectedExportReportType();
-            const { fromdate, todate } = getExportModalDateRange();
 
-            if (fromdate && todate && fromdate > todate) {
-                if (window.frappe) {
-                    frappe.show_alert({
-                        message: "From date cannot be greater than To date",
-                        indicator: "orange"
-                    });
-                }
-                return;
+        // working server side download code
+        // function downloadExportFromModal() {
+        //     const reportType = getSelectedExportReportType();
+        //     const { fromdate, todate } = getExportModalDateRange();
+
+        //     if (fromdate && todate && fromdate > todate) {
+        //         if (window.frappe) {
+        //             frappe.show_alert({
+        //                 message: "From date cannot be greater than To date",
+        //                 indicator: "orange"
+        //             });
+        //         }
+        //         return;
+        //     }
+
+        //     const exportView = getViewForReportType(reportType);
+
+        //     closeExportModal();
+        //     setHeaderExportRunning(true);
+
+        //     const params = new URLSearchParams({
+        //         view: exportView,
+        //         search: searchQ || "",
+        //         sol_ids: selectedSolIds.size ? JSON.stringify([...selectedSolIds]) : "",
+        //         from_date: fromdate || "",
+        //         to_date: todate || "",
+        //         sort_by: getSortBy(),
+        //         sort_order: getSortOrder()
+        //     });
+
+        //     const url = `/api/method/banking_api.www.share_tracker.download_share_tracker_csv?${params.toString()}`;
+
+        //     const iframe = document.createElement("iframe");
+        //     iframe.style.display = "none";
+        //     iframe.src = url;
+        //     document.body.appendChild(iframe);
+
+        //     let finished = false;
+
+        //     const stopDownloadState = () => {
+        //         if (finished) return;
+        //         finished = true;
+        //         setHeaderExportRunning(false);
+        //         setTimeout(() => iframe.remove(), 8000);
+        //     };
+
+        //     iframe.onload = function () {
+        //         stopDownloadState();
+        //         if (window.frappe) {
+        //             frappe.show_alert({
+        //                 message: "Download started",
+        //                 indicator: "green"
+        //             });
+        //         }
+        //     };
+
+        //     setTimeout(() => {
+        //         stopDownloadState();
+        //     }, 15000);
+        // }
+
+        let activeExportId = null;
+        let exportPollTimer = null;
+
+        async function downloadExportFromModal() {
+            const selected = document.querySelector('input[name="exportReportType"]:checked');
+            const view = selected ? selected.value : "all";
+            const fromDate = document.getElementById("exportFromDate")?.value || null;
+            const toDate = document.getElementById("exportToDate")?.value || null;
+
+            showExportLoader("Queueing export job...");
+
+            try {
+                const result = await apiCall(
+                    "banking_api.www.share_tracker.enqueue_share_tracker_export",
+                    {
+                        view,
+                        search: searchQ || null,
+                        sol_ids: [...selectedSolIds],
+                        from_date: fromDate,
+                        to_date: toDate,
+                        sort_by: getSortBy(),
+                        sort_order: getSortOrder()
+                    }
+                );
+
+                activeExportId = result.export_id;
+                closeExportModal();
+                showExportLoader("Preparing CSV in background...");
+                startExportPolling(activeExportId);
+
+            } catch (e) {
+                hideExportLoader();
+                alert("Failed to queue export: " + (e.message || e));
             }
-
-            const exportView = getViewForReportType(reportType);
-
-            closeExportModal();
-            setHeaderExportRunning(true);
-
-            const params = new URLSearchParams({
-                view: exportView,
-                search: searchQ || "",
-                sol_ids: selectedSolIds.size ? JSON.stringify([...selectedSolIds]) : "",
-                from_date: fromdate || "",
-                to_date: todate || "",
-                sort_by: getSortBy(),
-                sort_order: getSortOrder()
-            });
-
-            const url = `/api/method/banking_api.www.share_tracker.download_share_tracker_csv?${params.toString()}`;
-
-            const iframe = document.createElement("iframe");
-            iframe.style.display = "none";
-            iframe.src = url;
-            document.body.appendChild(iframe);
-
-            let finished = false;
-
-            const stopDownloadState = () => {
-                if (finished) return;
-                finished = true;
-                setHeaderExportRunning(false);
-                setTimeout(() => iframe.remove(), 8000);
-            };
-
-            iframe.onload = function () {
-                stopDownloadState();
-                if (window.frappe) {
-                    frappe.show_alert({
-                        message: "Download started",
-                        indicator: "green"
-                    });
-                }
-            };
-
-            setTimeout(() => {
-                stopDownloadState();
-            }, 15000);
         }
 
         // function setHeaderExportRunning(isRunning) {
@@ -4200,22 +5069,105 @@
         }
 
         function pillHTML(row) {
-            const key = getStatusKey(row);
-            const label = getStatusLabel(row);
+            let key = getStatusKey(row);
+            let label = getStatusLabel(row);
+
+            const hasFailureFlag =
+                cintLike(row.account_frozen ?? row.accountfrozen) === 1 ||
+                cintLike(row.account_closed ?? row.accountclosed) === 1 ||
+                cintLike(row.account_not_found ?? row.accountnotfound) === 1 ||
+                cintLike(row.insufficient_balance ?? row.insufficientbalance) === 1;
+
+            const paymentStatus = String(row.payment_status ?? row.paymentstatus ?? "").trim();
+
+            if (!hasFailureFlag) {
+                if (currentTab === "frozen") {
+                    key = "frozen";
+                    label = "Account Frozen";
+                } else if (currentTab === "not_found") {
+                    key = "not_found";
+                    label = "Account Not Found";
+                } else if (currentTab === "closed") {
+                    key = "closed";
+                    label = "Account Closed";
+                } else if (currentTab === "insuf") {
+                    key = "insuf";
+                    label = "Insufficient Balance";
+                } else if (currentTab === "pending" && paymentStatus === "Pending") {
+                    key = "pending";
+                    label = "Pending";
+                } else if (currentTab === "success" && paymentStatus === "Success") {
+                    key = "success";
+                    label = "Success";
+                } else if (paymentStatus === "Failed") {
+                    key = "network_issue";
+                    label = "Network Issue";
+                }
+            }
 
             const clsMap = {
                 pending: "pill-pending",
                 insuf: "pill-insuf",
                 closed: "pill-closed",
                 frozen: "pill-frozen",
-                not_found: "pill-not-found",
+                notfound: "pill-not-found",
                 success: "pill-success",
+                network_issue: "pill-network",
                 failed: "pill-insuf",
                 unknown: "pill-closed"
             };
 
             return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
         }
+
+        // function pillHTML(row) {
+        //     let key = getStatusKey(row);
+        //     let label = getStatusLabel(row);
+
+        //     const hasFailureFlag =
+        //         cintLike(row.account_frozen ?? row.accountfrozen) === 1 ||
+        //         cintLike(row.account_closed ?? row.accountclosed) === 1 ||
+        //         cintLike(row.account_not_found ?? row.accountnotfound) === 1 ||
+        //         cintLike(row.insufficient_balance ?? row.insufficientbalance) === 1;
+
+        //     const paymentStatus = String(row.payment_status ?? row.paymentstatus ?? "").trim();
+
+        //     if (!hasFailureFlag) {
+        //         if (currentTab === "frozen") {
+        //             key = "frozen";
+        //             label = "Account Frozen";
+        //         } else if (currentTab === "notfound") {
+        //             key = "notfound";
+        //             label = "Account Not Found";
+        //         } else if (currentTab === "closed") {
+        //             key = "closed";
+        //             label = "Account Closed";
+        //         } else if (currentTab === "insuf") {
+        //             key = "insuf";
+        //             label = "Insufficient Balance";
+        //         } else if (currentTab === "pending" && paymentStatus === "Pending") {
+        //             key = "pending";
+        //             label = "Pending";
+        //         } else if (currentTab === "success" && paymentStatus === "Success") {
+        //             key = "success";
+        //             label = "Success";
+        //         }
+        //     }
+
+        //     const clsMap = {
+        //         pending: "pill-pending",
+        //         insuf: "pill-insuf",
+        //         closed: "pill-closed",
+        //         frozen: "pill-frozen",
+        //         notfound: "pill-not-found",
+        //         success: "pill-success",
+        //         network_issue: "pill-network",
+        //         failed: "pill-insuf",
+        //         unknown: "pill-closed"
+        //     };
+
+        //     return `<span class="pill ${clsMap[key] || "pill-closed"}">${escapeHtml(label)}</span>`;
+        // }
 
         document.addEventListener("DOMContentLoaded", async function () {
             bindExistingTabButtons();
