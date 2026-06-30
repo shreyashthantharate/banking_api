@@ -25,8 +25,7 @@ def sync_employees_to_finacle():
             "first_name",
             "last_name",
             "user_id",
-            "company_email",
-            "personal_email",
+            "sol_id",
         ],
     )
 
@@ -34,15 +33,15 @@ def sync_employees_to_finacle():
         frappe.logger().info("Finacle Sync: No new employees found to sync.")
         return
 
-    settings = frappe.get_single("Finacle DB Credentials")
-    host = (settings.db_host or "").strip()
-    port = settings.db_port
-    user = (settings.db_user or "").strip()
-    password = settings.get_password("db_password")
-    db_name = (settings.db_name or "").strip()
+    settings = frappe.get_single("Finacle Settings")
+    host = (settings.host or "").strip()
+    port = settings.port
+    db_name = (settings.database_name or "").strip()
+    user = (settings.user or "").strip()
+    password = settings.get_password("password")
 
-    if not all([host, port, user, password, db_name]):
-        msg = "Finacle DB Credentials are incomplete."
+    if not all([host, port, db_name, user, password]):
+        msg = "Finacle Settings are incomplete."
         frappe.logger().error(msg)
         frappe.log_error(msg, "Finacle Sync Config Error")
         return
@@ -64,7 +63,24 @@ def sync_employees_to_finacle():
             finacle_emp_id = f"SAH0{emp.name}"
             emp_name = (emp.employee_name or "")[:50]
             emp_short_name = (emp.first_name or emp_name)[:15]
-            email = emp.company_email or emp.personal_email or None
+            sol_id = (emp.sol_id or "").strip()
+
+            if not sol_id:
+                error_data = {
+                    "status": "failed",
+                    "error": "sol_id is missing in Employee record",
+                    "employee": emp.name,
+                    "finacle_employee_id": finacle_emp_id,
+                }
+
+                log_sync_attempt(
+                    emp.name,
+                    finacle_emp_id,
+                    {},
+                    error_data,
+                    "Failed",
+                )
+                continue
 
             insert_query = """
                 INSERT INTO tbaadm."get"
@@ -72,22 +88,22 @@ def sync_employees_to_finacle():
                     emp_id, entity_cre_flg, del_flg, emp_intls, sol_id, emp_name, emp_short_name,
                     emp_sign_power_num, emp_sign_power_amt, emp_desig, emp_stat, tot_mod_times,
                     lchg_user_id, lchg_time, rcre_user_id, rcre_time, is_head_teller, ts_cnt,
-                    emp_email_id, alt1_emp_name, alt1_emp_short_name
+                    alt1_emp_name, alt1_emp_short_name
                 )
                 VALUES
                 (
-                    %s, 'Y', 'N', NULL, '1042', %s, %s,
+                    %s, 'Y', 'N', NULL, %s, %s, %s,
                     0, 0.0000, NULL, NULL, 0,
                     'SYSTEM', NOW(), 'SYSTEM', NOW(), 'N', 1,
-                    %s, NULL, NULL
+                    NULL, NULL
                 )
             """
 
             query_values = (
                 finacle_emp_id,
+                sol_id,
                 emp_name,
                 emp_short_name,
-                email,
             )
 
             try:
@@ -117,10 +133,13 @@ def sync_employees_to_finacle():
                     "traceback": error_trace,
                     "employee": emp.name,
                     "finacle_employee_id": finacle_emp_id,
+                    "sol_id": sol_id,
                 }
 
                 frappe.log_error(
-                    error_trace, f"Finacle Employee Sync Failed: {emp.name}")
+                    error_trace,
+                    f"Finacle Employee Sync Failed: {emp.name}"
+                )
 
                 log_sync_attempt(
                     emp.name,
