@@ -283,12 +283,13 @@ def get_share_application_query(sync_days=30):
             AND g.entity_cre_flg = 'Y'
             AND g.del_flg = 'N'
             AND g.acct_cls_flg = 'N'
-            AND g.clr_bal_amt >= 20
             AND cif_htd.cif_id IS NULL
             AND a.relationshipopeningdate IS NOT NULL
         ) AS final_data
         WHERE rn = 1;
     """
+
+# AND g.clr_bal_amt >= 20
 
 
 def run_share_application_sync():
@@ -446,6 +447,15 @@ def run_share_application_sync():
 
 @frappe.whitelist()
 def run_share_application_sync_manual():
+    current_hour = now_datetime().hour
+
+    # Run only from 10 AM to 6 PM
+    if not (10 <= current_hour <= 18):
+        return {
+            "status": "skipped",
+            "message": "Share Application Sync runs only between 10 AM and 6 PM."
+        }
+
     return run_share_application_sync()
 
 
