@@ -151,6 +151,167 @@ class ShareApplication(Document):
 #     frappe.response.type = "download"
 #     frappe.response.display_content_as = "attachment"
 
+###############################################################################################
+# @frappe.whitelist()
+# def download_share_application_report(report_type):
+#     report_type = (report_type or "").strip().lower()
+
+#     filters = {}
+#     filename = ""
+
+#     export_fields = [
+#         "name",
+#         # "docstatus",
+#         "sol_id",
+#         "cif",
+#         "account_number",
+#         "customer_name",
+#         "address",
+#         "scheme_type",
+#         "scheme_code",
+#         "transaction_amount",
+#         "payment_status",
+#         "failed_reason",
+#         "transaction_id",
+#         "fund_transfer_date",
+#         "cif_creation_date",
+#         "account_opening_date",
+#         # "amended_from",
+#         # "retry_attempted",
+#         # "last_retry_attempted",
+#         # "error_log",
+#         # "owner",
+#         # "creation",
+#     ]
+
+#     db_fields = [
+#         "name",
+#         "docstatus",
+#         "sol_id",
+#         "cif",
+#         "account_number",
+#         "customer_name",
+#         "address",
+#         "scheme_type",
+#         "scheme_code",
+#         "transaction_amount",
+#         "payment_status",
+#         "transaction_id",
+#         "fund_transfer_date",
+#         "cif_creation_date",
+#         "account_opening_date",
+#         # "amended_from",
+#         # "retry_attempted",
+#         # "last_retry_attempted",
+#         # "error_log",
+#         # "owner",
+#         # "creation",
+#         "insufficient_balance",
+#         "account_closed",
+#         "account_frozen",
+#         "account_not_found",
+#     ]
+
+#     if report_type == "success":
+#         filters = {"payment_status": "Success"}
+#         filename = "share_application_success_report.csv"
+
+#     elif report_type == "failed":
+#         filters = {"payment_status": "Failed"}
+#         filename = "share_application_failed_report.csv"
+
+#     elif report_type == "pending":
+#         filters = {"payment_status": "Pending"}
+#         filename = "share_application_pending_report.csv"
+
+#     elif report_type == "consolidated":
+#         filters = {}
+#         filename = "share_application_consolidated_report.csv"
+
+#     else:
+#         frappe.throw(_("Invalid report type."))
+
+#     records = frappe.get_all(
+#         "Share Application",
+#         filters=filters,
+#         fields=db_fields,
+#         order_by="modified desc"
+#     )
+
+#     label_map = {
+#         "name": "Share Application ID",
+#         "docstatus": "Doc Status",
+#         "sol_id": "SOL ID",
+#         "cif": "CIF",
+#         "account_number": "Account Number",
+#         "customer_name": "Customer Name",
+#         "address": "Address",
+#         "scheme_type": "Scheme Type",
+#         "scheme_code": "Scheme Code",
+#         "transaction_amount": "Transaction Amount",
+#         "payment_status": "Payment Status",
+#         "failed_reason": "Failed Reason",
+#         "transaction_id": "Transaction ID",
+#         "fund_transfer_date": "Fund Transfer Date",
+#         "cif_creation_date": "CIF Creation Date",
+#         "account_opening_date": "Account Opening Date",
+#         "amended_from": "Amended From",
+#         "retry_attempted": "Retry Attempted",
+#         "last_retry_attempted": "Last Retry Attempted",
+#         "error_log": "API Response",
+#         "owner": "Owner",
+#         "creation": "Created On",
+#     }
+
+#     docstatus_map = {
+#         0: "Draft",
+#         1: "Submitted",
+#         2: "Cancelled"
+#     }
+
+#     def get_failed_reason(row):
+#         if row.get("payment_status") != "Failed":
+#             return ""
+
+#         if row.get("insufficient_balance"):
+#             return "Insufficient Balance"
+#         if row.get("account_closed"):
+#             return "Account Closed"
+#         if row.get("account_frozen"):
+#             return "Account Frozen"
+#         if row.get("account_not_found"):
+#             return "Account Not Found"
+
+#         return "Network Issue"
+
+#     output = io.StringIO()
+#     writer = csv.writer(output)
+
+#     writer.writerow([label_map.get(field, field) for field in export_fields])
+
+#     for row in records:
+#         row_data = []
+
+#         for field in export_fields:
+#             if field == "failed_reason":
+#                 value = get_failed_reason(row)
+#             elif field == "docstatus":
+#                 value = docstatus_map.get(row.get(field), row.get(field))
+#             else:
+#                 value = row.get(field, "")
+
+#             row_data.append(value)
+
+#         writer.writerow(row_data)
+
+#     frappe.response.filename = filename
+#     frappe.response.filecontent = output.getvalue()
+#     frappe.response.type = "download"
+#     frappe.response.display_content_as = "attachment"
+
+###############################################################################################
+
+
 @frappe.whitelist()
 def download_share_application_report(report_type):
     report_type = (report_type or "").strip().lower()
@@ -160,12 +321,11 @@ def download_share_application_report(report_type):
 
     export_fields = [
         "name",
-        "docstatus",
+        # "docstatus",
         "sol_id",
         "cif",
         "account_number",
         "customer_name",
-        "address",
         "scheme_type",
         "scheme_code",
         "transaction_amount",
@@ -175,22 +335,21 @@ def download_share_application_report(report_type):
         "fund_transfer_date",
         "cif_creation_date",
         "account_opening_date",
-        # "amended_from",
-        "retry_attempted",
-        "last_retry_attempted",
-        "error_log",
-        "owner",
-        "creation",
+        # "retry_attempted",
+        # "last_retry_attempted",
+        # "owner",
+        # "creation",
+        "address",
+        # "error_log",
     ]
 
     db_fields = [
         "name",
-        "docstatus",
+        # "docstatus",
         "sol_id",
         "cif",
         "account_number",
         "customer_name",
-        "address",
         "scheme_type",
         "scheme_code",
         "transaction_amount",
@@ -199,12 +358,12 @@ def download_share_application_report(report_type):
         "fund_transfer_date",
         "cif_creation_date",
         "account_opening_date",
-        # "amended_from",
-        "retry_attempted",
-        "last_retry_attempted",
-        "error_log",
-        "owner",
-        "creation",
+        # "retry_attempted",
+        # "last_retry_attempted",
+        # "owner",
+        # "creation",
+        "address",
+        # "error_log",
         "insufficient_balance",
         "account_closed",
         "account_frozen",
@@ -230,21 +389,13 @@ def download_share_application_report(report_type):
     else:
         frappe.throw(_("Invalid report type."))
 
-    records = frappe.get_all(
-        "Share Application",
-        filters=filters,
-        fields=db_fields,
-        order_by="modified desc"
-    )
-
     label_map = {
         "name": "Share Application ID",
-        "docstatus": "Doc Status",
+        # "docstatus": "Doc Status",
         "sol_id": "SOL ID",
         "cif": "CIF",
         "account_number": "Account Number",
         "customer_name": "Customer Name",
-        "address": "Address",
         "scheme_type": "Scheme Type",
         "scheme_code": "Scheme Code",
         "transaction_amount": "Transaction Amount",
@@ -254,18 +405,18 @@ def download_share_application_report(report_type):
         "fund_transfer_date": "Fund Transfer Date",
         "cif_creation_date": "CIF Creation Date",
         "account_opening_date": "Account Opening Date",
-        "amended_from": "Amended From",
-        "retry_attempted": "Retry Attempted",
-        "last_retry_attempted": "Last Retry Attempted",
-        "error_log": "API Response",
-        "owner": "Owner",
-        "creation": "Created On",
+        # "retry_attempted": "Retry Attempted",
+        # "last_retry_attempted": "Last Retry Attempted",
+        # "owner": "Owner",
+        # "creation": "Created On",
+        "address": "Address",
+        # "error_log": "API Response",
     }
 
     docstatus_map = {
         0: "Draft",
         1: "Submitted",
-        2: "Cancelled"
+        2: "Cancelled",
     }
 
     def get_failed_reason(row):
@@ -285,23 +436,40 @@ def download_share_application_report(report_type):
 
     output = io.StringIO()
     writer = csv.writer(output)
-
     writer.writerow([label_map.get(field, field) for field in export_fields])
 
-    for row in records:
-        row_data = []
+    chunk_size = 10000
+    start = 0
 
-        for field in export_fields:
-            if field == "failed_reason":
-                value = get_failed_reason(row)
-            elif field == "docstatus":
-                value = docstatus_map.get(row.get(field), row.get(field))
-            else:
-                value = row.get(field, "")
+    while True:
+        records = frappe.get_all(
+            "Share Application",
+            filters=filters,
+            fields=db_fields,
+            limit_start=start,
+            limit_page_length=chunk_size,
+            order_by="name asc"
+        )
 
-            row_data.append(value)
+        if not records:
+            break
 
-        writer.writerow(row_data)
+        for row in records:
+            row_data = []
+
+            for field in export_fields:
+                if field == "failed_reason":
+                    value = get_failed_reason(row)
+                elif field == "docstatus":
+                    value = docstatus_map.get(row.get(field), row.get(field))
+                else:
+                    value = row.get(field, "")
+
+                row_data.append(value)
+
+            writer.writerow(row_data)
+
+        start += chunk_size
 
     frappe.response.filename = filename
     frappe.response.filecontent = output.getvalue()
