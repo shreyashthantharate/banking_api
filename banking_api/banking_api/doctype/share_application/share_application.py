@@ -1,6 +1,10 @@
 # Copyright (c) 2026, Talib Sheikh and contributors
 # For license information, please see license.txt
 
+from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl import Workbook
 import frappe
 import csv
 import io
@@ -48,68 +52,180 @@ class ShareApplication(Document):
                     _("Transaction ID is mandatory before submission."))
 
 
+# @frappe.whitelist()
+# def download_share_application_report(report_type):
+#     report_type = (report_type or "").strip().lower()
+
+#     filters = {}
+#     fields = []
+#     filename = ""
+
+#     if report_type == "success":
+#         filters = {"payment_status": "Success"}
+#         fields = [
+#             "sol_id",
+#             "cif",
+#             "account_number",
+#             "transaction_id",
+#             "fund_transfer_date",
+#             "cif_creation_date",
+#             "payment_status",
+#         ]
+#         filename = "share_application_success_report.csv"
+
+#     elif report_type == "failed":
+#         filters = {"payment_status": "Failed"}
+#         fields = [
+#             "sol_id",
+#             "cif",
+#             "account_number",
+#             "cif_creation_date",
+#             "payment_status",
+#             "error_log",
+#             "insufficient_balance",
+#             "account_closed",
+#         ]
+#         filename = "share_application_failed_report.csv"
+
+#     elif report_type == "insufficient_balance":
+#         filters = {"insufficient_balance": 1}
+#         fields = [
+#             "sol_id",
+#             "cif",
+#             "account_number",
+#             "cif_creation_date",
+#             "payment_status",
+#             "error_log",
+#             "insufficient_balance",
+#             "account_closed",
+#         ]
+#         filename = "share_application_insufficient_balance_report.csv"
+
+#     elif report_type == "account_closed":
+#         filters = {"account_closed": 1}
+#         fields = [
+#             "sol_id",
+#             "cif",
+#             "account_number",
+#             "cif_creation_date",
+#             "payment_status",
+#             "error_log",
+#             "insufficient_balance",
+#             "account_closed",
+#         ]
+#         filename = "share_application_closed_account_report.csv"
+
+#     else:
+#         frappe.throw(_("Invalid report type."))
+
+#     records = frappe.get_all(
+#         "Share Application",
+#         filters=filters,
+#         fields=fields,
+#         order_by="modified desc"
+#     )
+
+#     label_map = {
+#         "sol_id": "SOL ID",
+#         "cif": "CIF",
+#         "account_number": "Account Number",
+#         "transaction_id": "Transaction ID",
+#         "fund_transfer_date": "Fund Transfer Date",
+#         "cif_creation_date": "CIF Creation Date",
+#         "payment_status": "Payment Status",
+#         "error_log": "Error Log",
+#         "insufficient_balance": "Insufficient Balance",
+#         "account_closed": "Account Closed",
+#     }
+
+#     output = io.StringIO()
+#     writer = csv.writer(output)
+
+#     writer.writerow([label_map.get(field, field) for field in fields])
+
+#     for row in records:
+#         writer.writerow([row.get(field, "") for field in fields])
+
+#     frappe.response.filename = filename
+#     frappe.response.filecontent = output.getvalue()
+#     frappe.response.type = "download"
+#     frappe.response.display_content_as = "attachment"
+
 @frappe.whitelist()
 def download_share_application_report(report_type):
     report_type = (report_type or "").strip().lower()
 
     filters = {}
-    fields = []
     filename = ""
+
+    export_fields = [
+        "name",
+        "docstatus",
+        "sol_id",
+        "cif",
+        "account_number",
+        "customer_name",
+        "address",
+        "scheme_type",
+        "scheme_code",
+        "transaction_amount",
+        "payment_status",
+        "failed_reason",
+        "transaction_id",
+        "fund_transfer_date",
+        "cif_creation_date",
+        "account_opening_date",
+        # "amended_from",
+        "retry_attempted",
+        "last_retry_attempted",
+        "error_log",
+        "owner",
+        "creation",
+    ]
+
+    db_fields = [
+        "name",
+        "docstatus",
+        "sol_id",
+        "cif",
+        "account_number",
+        "customer_name",
+        "address",
+        "scheme_type",
+        "scheme_code",
+        "transaction_amount",
+        "payment_status",
+        "transaction_id",
+        "fund_transfer_date",
+        "cif_creation_date",
+        "account_opening_date",
+        # "amended_from",
+        "retry_attempted",
+        "last_retry_attempted",
+        "error_log",
+        "owner",
+        "creation",
+        "insufficient_balance",
+        "account_closed",
+        "account_frozen",
+        "account_not_found",
+    ]
 
     if report_type == "success":
         filters = {"payment_status": "Success"}
-        fields = [
-            "sol_id",
-            "cif",
-            "account_number",
-            "transaction_id",
-            "fund_transfer_date",
-            "cif_creation_date",
-            "payment_status",
-        ]
         filename = "share_application_success_report.csv"
 
     elif report_type == "failed":
         filters = {"payment_status": "Failed"}
-        fields = [
-            "sol_id",
-            "cif",
-            "account_number",
-            "cif_creation_date",
-            "payment_status",
-            "error_log",
-            "insufficient_balance",
-            "account_closed",
-        ]
         filename = "share_application_failed_report.csv"
 
-    elif report_type == "insufficient_balance":
-        filters = {"insufficient_balance": 1}
-        fields = [
-            "sol_id",
-            "cif",
-            "account_number",
-            "cif_creation_date",
-            "payment_status",
-            "error_log",
-            "insufficient_balance",
-            "account_closed",
-        ]
-        filename = "share_application_insufficient_balance_report.csv"
+    elif report_type == "pending":
+        filters = {"payment_status": "Pending"}
+        filename = "share_application_pending_report.csv"
 
-    elif report_type == "account_closed":
-        filters = {"account_closed": 1}
-        fields = [
-            "sol_id",
-            "cif",
-            "account_number",
-            "cif_creation_date",
-            "payment_status",
-            "error_log",
-            "insufficient_balance",
-            "account_closed",
-        ]
-        filename = "share_application_closed_account_report.csv"
+    elif report_type == "consolidated":
+        filters = {}
+        filename = "share_application_consolidated_report.csv"
 
     else:
         frappe.throw(_("Invalid report type."))
@@ -117,30 +233,75 @@ def download_share_application_report(report_type):
     records = frappe.get_all(
         "Share Application",
         filters=filters,
-        fields=fields,
+        fields=db_fields,
         order_by="modified desc"
     )
 
     label_map = {
+        "name": "Share Application ID",
+        "docstatus": "Doc Status",
         "sol_id": "SOL ID",
         "cif": "CIF",
         "account_number": "Account Number",
+        "customer_name": "Customer Name",
+        "address": "Address",
+        "scheme_type": "Scheme Type",
+        "scheme_code": "Scheme Code",
+        "transaction_amount": "Transaction Amount",
+        "payment_status": "Payment Status",
+        "failed_reason": "Failed Reason",
         "transaction_id": "Transaction ID",
         "fund_transfer_date": "Fund Transfer Date",
         "cif_creation_date": "CIF Creation Date",
-        "payment_status": "Payment Status",
-        "error_log": "Error Log",
-        "insufficient_balance": "Insufficient Balance",
-        "account_closed": "Account Closed",
+        "account_opening_date": "Account Opening Date",
+        "amended_from": "Amended From",
+        "retry_attempted": "Retry Attempted",
+        "last_retry_attempted": "Last Retry Attempted",
+        "error_log": "API Response",
+        "owner": "Owner",
+        "creation": "Created On",
     }
+
+    docstatus_map = {
+        0: "Draft",
+        1: "Submitted",
+        2: "Cancelled"
+    }
+
+    def get_failed_reason(row):
+        if row.get("payment_status") != "Failed":
+            return ""
+
+        if row.get("insufficient_balance"):
+            return "Insufficient Balance"
+        if row.get("account_closed"):
+            return "Account Closed"
+        if row.get("account_frozen"):
+            return "Account Frozen"
+        if row.get("account_not_found"):
+            return "Account Not Found"
+
+        return "Network Issue"
 
     output = io.StringIO()
     writer = csv.writer(output)
 
-    writer.writerow([label_map.get(field, field) for field in fields])
+    writer.writerow([label_map.get(field, field) for field in export_fields])
 
     for row in records:
-        writer.writerow([row.get(field, "") for field in fields])
+        row_data = []
+
+        for field in export_fields:
+            if field == "failed_reason":
+                value = get_failed_reason(row)
+            elif field == "docstatus":
+                value = docstatus_map.get(row.get(field), row.get(field))
+            else:
+                value = row.get(field, "")
+
+            row_data.append(value)
+
+        writer.writerow(row_data)
 
     frappe.response.filename = filename
     frappe.response.filecontent = output.getvalue()
