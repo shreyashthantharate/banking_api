@@ -190,14 +190,14 @@ scheduler_events = {
     "cron": {
 
         # run share application sync and payment
-        "0 11,14,17 * * 1-6": [
-            "banking_api.banking_api.doctype.share_application_settings.share_application_settings.run_bulk_share_application_payment"
-        ],
+        # "0 11,14,17 * * 1-6": [
+        #     "banking_api.banking_api.doctype.share_application_settings.share_application_settings.run_bulk_share_application_payment"
+        # ],
 
         # retry share application payment
-        "0 10,16 * * 1-6": [
-            "banking_api.banking_api.doctype.share_application_settings.share_application_settings.retry_share_application_payment"
-        ]
+        # "0 10,16 * * 1-6": [
+        #     "banking_api.banking_api.doctype.share_application_settings.share_application_settings.retry_share_application_payment"
+        # ]
     }
 }
 
