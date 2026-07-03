@@ -475,3 +475,25 @@ def download_share_application_report(report_type):
     frappe.response.filecontent = output.getvalue()
     frappe.response.type = "download"
     frappe.response.display_content_as = "attachment"
+
+
+@frappe.whitelist()
+def get_share_application_status_counts():
+    data = frappe.db.sql("""
+        SELECT payment_status, COUNT(*) AS count
+        FROM `tabShare Application`
+        GROUP BY payment_status
+    """, as_dict=True)
+
+    counts = {
+        "Success": 0,
+        "Pending": 0,
+        "Failed": 0
+    }
+
+    for row in data:
+        status = row.get("payment_status")
+        if status in counts:
+            counts[status] = row.get("count", 0)
+
+    return counts
