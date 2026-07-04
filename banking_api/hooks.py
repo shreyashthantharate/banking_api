@@ -5,6 +5,15 @@ app_description = "Banking API"
 app_email = "talibsheikh16@gmail.com"
 app_license = "mit"
 
+# Fixtures
+# ------------------
+fixtures = [
+    {
+        "dt": "Email Template",
+        "filters": [["name", "=", "Finacle EDR Sync Summary"]],
+    }
+]
+
 # Apps
 # ------------------
 
@@ -188,6 +197,11 @@ scheduler_events = {
     ],
 
     "cron": {
+
+        # sync employees to finacle every night at 1 AM
+        "0 2 * * *": [
+            "banking_api.finacle_sync.sync_employees_to_finacle"
+        ],
 
         # run share application sync and payment
         # "0 11,14,17 * * 1-6": [

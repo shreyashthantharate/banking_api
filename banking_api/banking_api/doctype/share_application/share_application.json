@@ -21,6 +21,7 @@
   "account_closed",
   "account_frozen",
   "account_not_found",
+  "success_but_fund_not_debited",
   "retry_attempted",
   "last_retry_attempted",
   "customer_details_section",
@@ -193,13 +194,20 @@
    "label": "Customer Name",
    "reqd": 1,
    "search_index": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "success_but_fund_not_debited",
+   "fieldtype": "Check",
+   "label": "Success But Fund Not Debited",
+   "search_index": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-02 11:33:59.620317",
+ "modified": "2026-07-04 11:54:49.671810",
  "modified_by": "Administrator",
  "module": "Banking Api",
  "name": "Share Application",
