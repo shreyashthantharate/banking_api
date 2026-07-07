@@ -6,3 +6,4 @@
 
 # Patches added in this section will be executed after doctypes are migrated
 banking_api.patches.setup_finacle_sync_fields_and_log
+banking_api.patches.update_edr_sync_client_script
