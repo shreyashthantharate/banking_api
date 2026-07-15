@@ -178,7 +178,6 @@ def _serialize_row(row):
 #         if conn:
 #             conn.close()
 
-
 @frappe.whitelist()
 def get_loan_account_details():
     """
@@ -255,9 +254,14 @@ def get_loan_account_details():
             JOIN tbaadm.htd h ON g.acid = h.acid
             JOIN tbaadm.gac c ON g.acid = c.acid
             WHERE g.schm_type = 'LAA'
+              AND g.schm_code IN (
+                    '3001', '3002', '3003', '3004', '3024', '3027',
+                    '3028', '3039', '3040', '3041', '3042', '3044', '3045'
+              )
+              AND g.acct_cls_flg = 'N'
               AND g.entity_cre_flg = 'Y'
               AND g.del_flg = 'N'
-              AND h.part_tran_type = 'C'
+              -- AND h.part_tran_type = 'C'
               AND COALESCE(l3.flow_amt, 0) <> 0
             GROUP BY
                 g.cif_id,
@@ -288,7 +292,6 @@ def get_loan_account_details():
                 g2.schm_desc,
                 g.frez_code,
                 g.schm_type,
-                g.acct_cls_flg,
                 s.division_name,
                 s.region_name,
                 s.circle_office_name
@@ -305,10 +308,13 @@ def get_loan_account_details():
         }
 
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(),
-                         "Loan Account Details API Error")
+        frappe.log_error(
+            frappe.get_traceback(),
+            "Loan Account Details API Error"
+        )
         frappe.throw(
-            _("Unable to fetch loan account details: {0}").format(str(e)))
+            _("Unable to fetch loan account details: {0}").format(str(e))
+        )
 
     finally:
         if cur:
