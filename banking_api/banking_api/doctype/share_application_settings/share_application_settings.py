@@ -49,7 +49,7 @@ def cint_safe(value, default=0):
     except Exception:
         return default
 
-
+# old not used
 # def get_share_application_query(sync_days=None):
 #     return """
 #         SELECT *
@@ -160,13 +160,295 @@ def cint_safe(value, default=0):
 #     """
 
 
-def get_share_application_query(sync_days=30):
-    sync_days = cint_safe(sync_days, 30)
+# working till july 16 2026
+# def get_share_application_query(sync_days=30):
+#     sync_days = cint_safe(sync_days, 30)
 
-    if sync_days <= 0:
-        sync_days = 30
+#     if sync_days <= 0:
+#         sync_days = 30
 
-    return f"""
+#     return f"""
+#         SELECT *
+#         FROM (
+#             SELECT
+#                 g.cif_id AS cif_id,
+#                 a.relationshipopeningdate AS cif_opening_date,
+#                 g.foracid AS account_no,
+#                 g.acct_opn_date AS acct_opn_date,
+#                 g.sol_id AS sol_id,
+#                 s.sol_desc AS sol_desc,
+#                 g.acct_name AS acct_name,
+#                 g.clr_bal_amt AS clr_bal_amt,
+#                 g.schm_code AS schm_code,
+#                 g2.schm_desc AS schm_desc,
+#                 g.frez_code AS frez_code,
+#                 g.schm_type AS schm_type,
+#                 g.acct_cls_date AS acct_cls_date,
+#                 g.acct_cls_flg AS acct_cls_flg,
+#                 adr.name AS customer_name,
+#                 adr.address_line1 AS address_line1,
+#                 adr.address_line2 AS address_line2,
+#                 concat_ws(', ', adr.address_line1, adr.address_line2) AS address,
+#                 CASE
+#                     WHEN cif_htd.cif_id IS NOT NULL THEN 'DEDUCTED'
+#                     ELSE 'NOT DEDUCTED'
+#                 END AS remark,
+#                 CASE
+#                     WHEN g.clr_bal_amt >= 20 THEN 'SUFFICIENT BALANCE'
+#                     ELSE 'INSUFFICIENT BALANCE'
+#                 END AS balance_status,
+#                 CASE
+#                     WHEN acc_htd.acid IS NOT NULL THEN 'YES'
+#                     ELSE NULL
+#                 END AS share_fund_status,
+#                 ROW_NUMBER() OVER (
+#                     PARTITION BY g.cif_id
+#                     ORDER BY CASE g.schm_code
+#                         WHEN '1001' THEN 1
+#                         WHEN '1002' THEN 2
+#                         WHEN '1003' THEN 3
+#                         WHEN '1004' THEN 4
+#                         WHEN '1005' THEN 5
+#                         WHEN '1006' THEN 6
+#                         WHEN '1008' THEN 7
+#                         WHEN '1010' THEN 8
+#                         WHEN '1009' THEN 9
+#                         WHEN '1011' THEN 10
+#                         WHEN '1012' THEN 11
+#                         WHEN '1013' THEN 12
+#                         WHEN '1101' THEN 13
+#                         WHEN '1102' THEN 14
+#                         WHEN '1103' THEN 15
+#                         WHEN '1104' THEN 16
+#                         WHEN '1117' THEN 17
+#                         ELSE 999
+#                     END,
+#                     g.foracid
+#                 ) AS rn
+#             FROM tbaadm.gam g
+#             JOIN tbaadm.sol s ON g.sol_id = s.sol_id
+#             JOIN tbaadm.gsp g2 ON g.schm_code = g2.schm_code
+
+#             LEFT JOIN LATERAL (
+#                 SELECT orgkey, relationshipopeningdate
+#                 FROM crmuser.accounts a
+#                 WHERE a.orgkey = g.cif_id
+#                     AND a.relationshipopeningdate >= CURRENT_DATE - make_interval(days => {sync_days})
+#                     AND a.relationshipopeningdate <= CURRENT_DATE
+#                 ORDER BY a.relationshipopeningdate DESC
+#                 LIMIT 1
+#             ) a ON TRUE
+
+#             LEFT JOIN LATERAL (
+#                 SELECT
+#                     adr.orgkey,
+#                     adr.name,
+#                     adr.address_line1,
+#                     adr.address_line2
+#                 FROM crmuser.address adr
+#                 WHERE adr.orgkey = g.cif_id
+#                 ORDER BY adr.name NULLS LAST
+#                 LIMIT 1
+#             ) adr ON TRUE
+
+#             LEFT JOIN (
+#                 SELECT DISTINCT g.cif_id
+#                 FROM tbaadm.htd h
+#                 JOIN tbaadm.gam g ON h.acid = g.acid
+#                 WHERE h.tran_particular = 'SHARE FUND DEBITED'
+#                 AND h.part_tran_type = 'D'
+#                 AND g.cif_id IN (
+#                     SELECT DISTINCT g2.cif_id
+#                     FROM tbaadm.gam g2
+#                     WHERE g2.schm_code IN (
+#                         '1001','1002','1003','1004','1005','1006','1008','1010',
+#                         '1009','1011','1012','1013','1101','1102','1103','1104','1117'
+#                     )
+#                         AND g2.entity_cre_flg = 'Y'
+#                         AND g2.del_flg = 'N'
+#                         AND g2.acct_cls_flg = 'N'
+#                 )
+#             ) cif_htd ON g.cif_id = cif_htd.cif_id
+
+#             LEFT JOIN (
+#                 SELECT DISTINCT h.acid
+#                 FROM tbaadm.htd h
+#                 WHERE h.tran_particular = 'SHARE FUND DEBITED'
+#                 AND h.part_tran_type = 'D'
+#             ) acc_htd ON g.acid = acc_htd.acid
+
+#             WHERE g.schm_code IN (
+#                     '1001','1002','1003','1004','1005','1006','1008','1010',
+#                     '1009','1011','1012','1013','1101','1102','1103','1104','1117'
+#                 )
+#             AND g.entity_cre_flg = 'Y'
+#             AND g.del_flg = 'N'
+#             AND g.acct_cls_flg = 'N'
+#             AND cif_htd.cif_id IS NULL
+#             AND a.relationshipopeningdate IS NOT NULL
+#         ) AS final_data
+#         WHERE rn = 1;
+#     """
+
+# # AND g.clr_bal_amt >= 20
+
+
+# working till july 16 2026
+# def run_share_application_sync():
+#     settings = frappe.get_single("Share Application Settings")
+
+#     if not settings.enable_sync:
+#         return {
+#             "status": "skipped",
+#             "message": "Share Application Sync is disabled."
+#         }
+
+#     # set sync days
+#     sync_days = cint_safe(settings.sync_back_days, 30)
+
+#     conn = None
+#     cursor = None
+#     created_count = 0
+#     skipped_count = 0
+#     total_rows = 0
+
+#     try:
+#         conn = db_connection()
+#         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+#         # sync_days = cint_safe(settings.sync_back_days, 30)
+#         query = get_share_application_query(sync_days)
+#         cursor.execute(query)
+
+#         existing_cifs = set(
+#             str(cif).strip()
+#             for cif in frappe.get_all("Share Application", pluck="cif")
+#             if cif is not None
+#         )
+
+#         with tqdm(
+#             total=None,
+#             desc="Share Application Sync",
+#             unit="row",
+#             ncols=120
+#         ) as pbar:
+
+#             while True:
+#                 row = cursor.fetchone()
+#                 if not row:
+#                     break
+
+#                 total_rows += 1
+
+#                 cif_id = row.get("cif_id")
+#                 foracid = row.get("account_no")
+#                 sol_id = row.get("sol_id")
+#                 cif_opening_date = row.get("cif_opening_date")
+
+#                 if cif_id is None:
+#                     skipped_count += 1
+#                     pbar.update(1)
+#                     pbar.set_postfix(
+#                         created=created_count,
+#                         skipped=skipped_count
+#                     )
+#                     continue
+
+#                 cif_id_str = str(cif_id).strip()
+#                 if cif_id_str in existing_cifs:
+#                     skipped_count += 1
+#                     pbar.update(1)
+#                     pbar.set_postfix(
+#                         created=created_count,
+#                         skipped=skipped_count
+#                     )
+#                     continue
+
+#                 # try:
+#                 #     doc = frappe.new_doc("Share Application")
+#                 #     doc.cif = cif_id
+#                 #     doc.account_number = foracid
+#                 #     doc.sol_id = sol_id
+#                 #     doc.cif_creation_date = cif_opening_date
+#                 #     doc.status = "Pending"
+#                 #     doc.insert(ignore_permissions=True)
+
+#                 #     frappe.db.commit()
+
+#                 #     existing_cifs.add(cif_id_str)
+#                 #     created_count += 1
+
+#                 try:
+#                     doc = frappe.new_doc("Share Application")
+#                     doc.cif = cif_id
+#                     doc.account_number = foracid
+#                     doc.sol_id = sol_id
+#                     doc.cif_creation_date = cif_opening_date
+#                     # doc.payment_status = "Pending"
+#                     doc.status = "Pending"
+
+#                     doc.customer_name = row.get(
+#                         "customer_name") or row.get("acct_name") or ""
+#                     doc.address = row.get("address") or ""
+#                     doc.scheme_code = row.get("schm_code") or ""
+#                     doc.scheme_type = row.get("schm_type") or ""
+#                     doc.account_opening_date = row.get("acct_opn_date")
+#                     # doc.transaction_amount = row.get("clr_bal_amt") or 0
+
+#                     doc.insert(ignore_permissions=True)
+
+#                     frappe.db.commit()
+
+#                     existing_cifs.add(cif_id_str)
+#                     created_count += 1
+
+#                 except Exception:
+#                     frappe.db.rollback()
+#                     skipped_count += 1
+#                     frappe.log_error(
+#                         frappe.get_traceback(),
+#                         f"Share Application Sync Row Failed - CIF {cif_id}"
+#                     )
+
+#                 pbar.update(1)
+#                 pbar.set_postfix(
+#                     created=created_count,
+#                     skipped=skipped_count
+#                 )
+
+#         frappe.db.set_single_value(
+#             "Share Application Settings",
+#             "last_sync_run",
+#             now()
+#         )
+#         frappe.db.commit()
+
+#         return {
+#             "status": "success",
+#             "total_rows": total_rows,
+#             "created_count": created_count,
+#             "skipped_count": skipped_count,
+#             "message": (
+#                 f"Sync completed. Total fetched: {total_rows}, "
+#                 f"created: {created_count}, skipped existing/errors: {skipped_count}."
+#             )
+#         }
+
+#     except Exception:
+#         frappe.db.rollback()
+#         frappe.log_error(frappe.get_traceback(),
+#                          "Share Application Sync Failed")
+#         raise
+
+#     finally:
+#         if cursor:
+#             cursor.close()
+#         if conn:
+#             conn.close()
+
+
+def get_share_application_query():
+    return """
         SELECT *
         FROM (
             SELECT 
@@ -219,7 +501,8 @@ def get_share_application_query(sync_days=30):
                         WHEN '1102' THEN 14
                         WHEN '1103' THEN 15
                         WHEN '1104' THEN 16
-                        WHEN '1117' THEN 17
+                        WHEN '1105' THEN 17
+                        WHEN '1117' THEN 18
                         ELSE 999
                     END,
                     g.foracid
@@ -232,7 +515,6 @@ def get_share_application_query(sync_days=30):
                 SELECT orgkey, relationshipopeningdate
                 FROM crmuser.accounts a
                 WHERE a.orgkey = g.cif_id
-                    AND a.relationshipopeningdate >= CURRENT_DATE - make_interval(days => {sync_days})
                     AND a.relationshipopeningdate <= CURRENT_DATE
                 ORDER BY a.relationshipopeningdate DESC
                 LIMIT 1
@@ -261,11 +543,12 @@ def get_share_application_query(sync_days=30):
                     FROM tbaadm.gam g2
                     WHERE g2.schm_code IN (
                         '1001','1002','1003','1004','1005','1006','1008','1010',
-                        '1009','1011','1012','1013','1101','1102','1103','1104','1117'
+                        '1009','1011','1012','1013','1101','1102','1103','1104',
+                        '1105','1117'
                     )
-                        AND g2.entity_cre_flg = 'Y'
-                        AND g2.del_flg = 'N'
-                        AND g2.acct_cls_flg = 'N'
+                    AND g2.entity_cre_flg = 'Y'
+                    AND g2.del_flg = 'N'
+                    AND g2.acct_cls_flg = 'N'
                 )
             ) cif_htd ON g.cif_id = cif_htd.cif_id
 
@@ -277,9 +560,10 @@ def get_share_application_query(sync_days=30):
             ) acc_htd ON g.acid = acc_htd.acid
 
             WHERE g.schm_code IN (
-                    '1001','1002','1003','1004','1005','1006','1008','1010',
-                    '1009','1011','1012','1013','1101','1102','1103','1104','1117'
-                )
+                '1001','1002','1003','1004','1005','1006','1008','1010',
+                '1009','1011','1012','1013','1101','1102','1103','1104',
+                '1105','1117'
+            )
             AND g.entity_cre_flg = 'Y'
             AND g.del_flg = 'N'
             AND g.acct_cls_flg = 'N'
@@ -288,8 +572,6 @@ def get_share_application_query(sync_days=30):
         ) AS final_data
         WHERE rn = 1;
     """
-
-# AND g.clr_bal_amt >= 20
 
 
 def run_share_application_sync():
@@ -301,9 +583,6 @@ def run_share_application_sync():
             "message": "Share Application Sync is disabled."
         }
 
-    # set sync days
-    sync_days = cint_safe(settings.sync_back_days, 30)
-
     conn = None
     cursor = None
     created_count = 0
@@ -314,8 +593,7 @@ def run_share_application_sync():
         conn = db_connection()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-        # sync_days = cint_safe(settings.sync_back_days, 30)
-        query = get_share_application_query(sync_days)
+        query = get_share_application_query()
         cursor.execute(query)
 
         existing_cifs = set(
@@ -362,39 +640,21 @@ def run_share_application_sync():
                     )
                     continue
 
-                # try:
-                #     doc = frappe.new_doc("Share Application")
-                #     doc.cif = cif_id
-                #     doc.account_number = foracid
-                #     doc.sol_id = sol_id
-                #     doc.cif_creation_date = cif_opening_date
-                #     doc.status = "Pending"
-                #     doc.insert(ignore_permissions=True)
-
-                #     frappe.db.commit()
-
-                #     existing_cifs.add(cif_id_str)
-                #     created_count += 1
-
                 try:
                     doc = frappe.new_doc("Share Application")
                     doc.cif = cif_id
                     doc.account_number = foracid
                     doc.sol_id = sol_id
                     doc.cif_creation_date = cif_opening_date
-                    # doc.payment_status = "Pending"
                     doc.status = "Pending"
-
                     doc.customer_name = row.get(
                         "customer_name") or row.get("acct_name") or ""
                     doc.address = row.get("address") or ""
                     doc.scheme_code = row.get("schm_code") or ""
                     doc.scheme_type = row.get("schm_type") or ""
                     doc.account_opening_date = row.get("acct_opn_date")
-                    # doc.transaction_amount = row.get("clr_bal_amt") or 0
 
                     doc.insert(ignore_permissions=True)
-
                     frappe.db.commit()
 
                     existing_cifs.add(cif_id_str)
@@ -434,8 +694,10 @@ def run_share_application_sync():
 
     except Exception:
         frappe.db.rollback()
-        frappe.log_error(frappe.get_traceback(),
-                         "Share Application Sync Failed")
+        frappe.log_error(
+            frappe.get_traceback(),
+            "Share Application Sync Failed"
+        )
         raise
 
     finally:
