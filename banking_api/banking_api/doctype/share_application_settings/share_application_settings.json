@@ -28,7 +28,9 @@
   "share_member_fee_gl",
   "member_fee_credit_amount",
   "column_break_vlie",
-  "total_debit_amount"
+  "total_debit_amount",
+  "share_certificate_configuration",
+  "share_certificate_image"
  ],
  "fields": [
   {
@@ -157,13 +159,25 @@
    "fieldtype": "Select",
    "label": "Sync Timing",
    "options": "Hourly\nDaily"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "share_certificate_configuration",
+   "fieldtype": "Section Break",
+   "label": "Share Certificate Configuration"
+  },
+  {
+   "fieldname": "share_certificate_image",
+   "fieldtype": "Attach Image",
+   "label": "Share Certificate Image",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-05-25 16:40:34.908810",
+ "modified": "2026-07-28 11:15:01.435832",
  "modified_by": "Administrator",
  "module": "Banking Api",
  "name": "Share Application Settings",
