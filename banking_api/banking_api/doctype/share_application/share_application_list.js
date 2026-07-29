@@ -1,64 +1,150 @@
 frappe.listview_settings["Share Application"] = {
+    // refresh(listview) {
+    //     hide_share_application_sidebar(listview);
+
+    //     if (!listview.page.__share_report_button_added) {
+    //         listview.page.__share_report_button_added = true;
+
+    //         listview.page.add_inner_button(__("Download Report"), () => {
+    //             const d = new frappe.ui.Dialog({
+    //                 title: __("Download Share Application Report"),
+    //                 fields: [
+    //                     {
+    //                         fieldname: "report_type",
+    //                         label: __("Report Type"),
+    //                         fieldtype: "Select",
+    //                         options: [
+    //                             "Success Report",
+    //                             "Failed Report",
+    //                             "Pending Report",
+    //                             "Consolidated Report"
+    //                         ].join("\n"),
+    //                         reqd: 1
+    //                     }
+    //                 ],
+    //                 primary_action_label: __("Download"),
+    //                 primary_action(values) {
+    //                     const report_map = {
+    //                         "Success Report": "success",
+    //                         "Failed Report": "failed",
+    //                         "Pending Report": "pending",
+    //                         "Consolidated Report": "consolidated"
+    //                     };
+
+    //                     const report_type = report_map[values.report_type];
+
+    //                     if (!report_type) {
+    //                         frappe.msgprint(__("Please select a valid report type."));
+    //                         return;
+    //                     }
+
+    //                     window.open(
+    //                         `/api/method/banking_api.banking_api.doctype.share_application.share_application.download_share_application_report?report_type=${report_type}`,
+    //                         "_blank"
+    //                     );
+
+    //                     d.hide();
+    //                 }
+    //             });
+
+    //             d.show();
+    //         });
+    //     }
+
+    //     render_status_capsules(listview);
+    //     setup_live_status_refresh(listview);
+
+    //     setTimeout(() => {
+    //         fix_share_application_header_layout(listview);
+    //     }, 50);
+    // }
+
     refresh(listview) {
-        hide_share_application_sidebar(listview);
+        if (listview.page.__share_actions_added) return;
+        listview.page.__share_actions_added = true;
 
-        if (!listview.page.__share_report_button_added) {
-            listview.page.__share_report_button_added = true;
+        const action_label = __("Actions");
 
-            listview.page.add_inner_button(__("Download Report"), () => {
-                const d = new frappe.ui.Dialog({
-                    title: __("Download Share Application Report"),
-                    fields: [
-                        {
-                            fieldname: "report_type",
-                            label: __("Report Type"),
-                            fieldtype: "Select",
-                            options: [
-                                "Success Report",
-                                "Failed Report",
-                                "Pending Report",
-                                "Consolidated Report"
-                            ].join("\n"),
-                            reqd: 1
-                        }
-                    ],
-                    primary_action_label: __("Download"),
-                    primary_action(values) {
-                        const report_map = {
-                            "Success Report": "success",
-                            "Failed Report": "failed",
-                            "Pending Report": "pending",
-                            "Consolidated Report": "consolidated"
-                        };
-
-                        const report_type = report_map[values.report_type];
-
-                        if (!report_type) {
-                            frappe.msgprint(__("Please select a valid report type."));
-                            return;
-                        }
-
-                        window.open(
-                            `/api/method/banking_api.banking_api.doctype.share_application.share_application.download_share_application_report?report_type=${report_type}`,
-                            "_blank"
-                        );
-
-                        d.hide();
+        listview.page.add_inner_button(__("Download Report"), () => {
+            const d = new frappe.ui.Dialog({
+                title: __("Download Share Application Report"),
+                fields: [
+                    {
+                        fieldname: "report_type",
+                        label: __("Report Type"),
+                        fieldtype: "Select",
+                        options: [
+                            "Success Report",
+                            "Failed Report",
+                            "Pending Report",
+                            "Consolidated Report"
+                        ].join("\n"),
+                        reqd: 1
                     }
-                });
+                ],
+                primary_action_label: __("Download"),
+                primary_action(values) {
+                    const report_map = {
+                        "Success Report": "success",
+                        "Failed Report": "failed",
+                        "Pending Report": "pending",
+                        "Consolidated Report": "consolidated"
+                    };
 
-                d.show();
+                    const report_type = report_map[values.report_type];
+
+                    if (!report_type) {
+                        frappe.msgprint(__("Please select a valid report type."));
+                        return;
+                    }
+
+                    window.open(
+                        `/api/method/banking_api.banking_api.doctype.share_application.share_application.download_share_application_report?report_type=${report_type}`,
+                        "_blank"
+                    );
+
+                    d.hide();
+                }
             });
-        }
 
-        render_status_capsules(listview);
-        setup_live_status_refresh(listview);
+            d.show();
+        }, action_label);
 
-        setTimeout(() => {
-            fix_share_application_header_layout(listview);
-        }, 50);
+        listview.page.add_inner_button(__("Proceeding Form"), () => {
+            open_proceeding_form_dialog();
+        }, action_label);
     }
 };
+
+function open_proceeding_form_dialog() {
+    const d = new frappe.ui.Dialog({
+        title: __("Generate Proceeding Form"),
+        fields: [
+            {
+                fieldname: "account_opening_date",
+                label: __("Account Opening Date"),
+                fieldtype: "Date",
+                reqd: 1
+            }
+        ],
+        primary_action_label: __("Proceed"),
+        primary_action(values) {
+            if (!values.account_opening_date) {
+                frappe.msgprint(__("Please select a date."));
+                return;
+            }
+
+            window.open(
+                `/api/method/banking_api.banking_api.doctype.share_application.share_application.download_proceeding_form?account_opening_date=${encodeURIComponent(values.account_opening_date)}`,
+                "_blank"
+            );
+
+            d.hide();
+        }
+    });
+
+    d.show();
+}
 
 function render_status_capsules(listview) {
     const $custom_actions = listview.page.wrapper.find(".page-actions .custom-actions");
