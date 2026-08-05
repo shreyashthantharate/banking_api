@@ -64,6 +64,7 @@
    "search_index": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "error_log",
    "fieldtype": "Code",
    "label": "API Response"
@@ -167,6 +168,7 @@
    "search_index": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "transaction_amount",
    "fieldtype": "Int",
    "label": "Transaction Amount",
@@ -207,7 +209,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-07-31 11:15:11.985256",
+ "modified": "2026-07-31 13:14:13.224033",
  "modified_by": "Administrator",
  "module": "Banking Api",
  "name": "Share Application",

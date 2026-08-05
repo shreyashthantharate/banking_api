@@ -578,15 +578,16 @@ def download_share_application_report(report_type):
         "payment_status",
         "failed_reason",
         "transaction_id",
+        "error_log",
         "fund_transfer_date",
         "cif_creation_date",
         "account_opening_date",
+        "success_but_fund_not_debited",
         # "retry_attempted",
         # "last_retry_attempted",
         # "owner",
         # "creation",
         "address",
-        # "error_log",
     ]
 
     db_fields = [
@@ -601,15 +602,16 @@ def download_share_application_report(report_type):
         "transaction_amount",
         "payment_status",
         "transaction_id",
+        "error_log",
         "fund_transfer_date",
         "cif_creation_date",
         "account_opening_date",
+        "success_but_fund_not_debited",
         # "retry_attempted",
         # "last_retry_attempted",
         # "owner",
         # "creation",
         "address",
-        # "error_log",
         "insufficient_balance",
         "account_closed",
         "account_frozen",
@@ -648,15 +650,16 @@ def download_share_application_report(report_type):
         "payment_status": "Payment Status",
         "failed_reason": "Failed Reason",
         "transaction_id": "Transaction ID",
+        "error_log": "API Response",
         "fund_transfer_date": "Fund Transfer Date",
         "cif_creation_date": "CIF Creation Date",
         "account_opening_date": "Account Opening Date",
+        "success_but_fund_not_debited": "Success But Fund Not Debited",
         # "retry_attempted": "Retry Attempted",
         # "last_retry_attempted": "Last Retry Attempted",
         # "owner": "Owner",
         # "creation": "Created On",
         "address": "Address",
-        # "error_log": "API Response",
     }
 
     docstatus_map = {
@@ -679,6 +682,11 @@ def download_share_application_report(report_type):
             return "Account Not Found"
 
         return "Network Issue"
+
+    def set_success_but_fund_not_debited(row):
+        if row.get("payment_status") == "Success" and row.get("success_but_fund_not_debited"):
+            return "Yes"
+        return "No"
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -703,11 +711,23 @@ def download_share_application_report(report_type):
         for row in records:
             row_data = []
 
+            # for field in export_fields:
+            #     if field == "failed_reason":
+            #         value = get_failed_reason(row)
+            #     elif field == "docstatus":
+            #         value = docstatus_map.get(row.get(field), row.get(field))
+            #     else:
+            #         value = row.get(field, "")
+
+            #     row_data.append(value)
+
             for field in export_fields:
                 if field == "failed_reason":
                     value = get_failed_reason(row)
                 elif field == "docstatus":
                     value = docstatus_map.get(row.get(field), row.get(field))
+                elif field == "success_but_fund_not_debited":
+                    value = set_success_but_fund_not_debited(row)
                 else:
                     value = row.get(field, "")
 
