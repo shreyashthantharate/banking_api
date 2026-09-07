@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commission Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script src="/assets/sahayog/js/petite-vue.iife.js"></script>
+    <link rel="stylesheet" href="./commission.css">
+</head>
+
+<body>
+    <!-- <div id="app" v-scope @vue:mounted="init()"> -->
+    <div id="app" v-scope>
+        <div v-effect="$el._i || ($el._i = 1, init())" style="display:none"></div>
+        <div class="dashboard">
+
+            <!-- Header -->
+            <!-- <header class="dash-header">
+                <div class="header-left">
+                    <h1>Commission Dashboard</h1>
+                    <p class="subtitle">Head Office · Agent Commission Overview</p>
+                </div>
+                <button class="btn-refresh" :class="{ spinning: loading }" @click="refreshAll()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                    </svg>
+                    Refresh
+                </button>
+            </header> -->
+
+            <header class="dash-header">
+                <div class="header-left">
+                    <h1>Commission Dashboard</h1>
+                    <p class="subtitle">Head Office · Agent Commission Overview</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-pay" :disabled="selectedCount === 0" @click="openPayDialog()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="5" width="20" height="14" rx="2" />
+                            <path d="M2 10h20" />
+                        </svg>
+                        Pay Now [[ selectedCount > 0 ? '(' + selectedCount + ')' : '' ]]
+                    </button>
+                    <button class="btn-refresh" :class="{ spinning: loading }" @click="refreshAll()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6" />
+                            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+            </header>
+
+            <!-- Error banner -->
+            <div class="error-banner" v-if="errorMsg">⚠️ [[ errorMsg ]]</div>
+
+            <!-- Stat cards -->
+            <div class="stats-grid">
+                <div class="stat-card" v-for="(card, idx) in statCards" :key="card.key"
+                    :style="{ '--delay': idx * 60 + 'ms' }">
+                    <div class="stat-icon" :style="{ background: card.color }">[[ card.icon ]]</div>
+                    <div class="stat-body">
+                        <div class="stat-label">[[ card.label ]]</div>
+                        <div class="stat-value">[[ card.prefix ]][[ formatNumber(displayValues[card.key]) ]]</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+
+                <!-- SOL autocomplete -->
+                <div class="filter-group autocomplete-group">
+                    <label>SOL</label>
+                    <div class="autocomplete-wrap">
+                        <input type="text" v-model="autocomplete.sol_id.query" placeholder="Search SOL..."
+                            @input="onAutocompleteInput('sol_id')" @focus="onAutocompleteFocus('sol_id')"
+                            @blur="onAutocompleteBlur('sol_id')">
+                        <button v-if="autocomplete.sol_id.query" class="clear-btn"
+                            @mousedown.prevent="clearAutocomplete('sol_id')">×</button>
+
+                        <!-- <div class="autocomplete-dropdown" v-if="autocomplete.sol_id.open">
+                            <template v-if="getMatches('sol_id').length">
+                                <div class="autocomplete-item" v-for="opt in getMatches('sol_id')" :key="opt.value"
+                                    @mousedown.prevent="selectOption('sol_id', opt)">
+                                    [[ opt.label ]]
+                                </div>
+                            </template>
+                            <div class="autocomplete-empty" v-else>No matches</div>
+                        </div> -->
+                        <!-- SOL autocomplete dropdown -->
+                        <div class="autocomplete-dropdown" v-if="autocomplete.sol_id.open">
+                            <div class="autocomplete-item" v-for="opt in getMatches('sol_id')" :key="opt.value"
+                                @mousedown.prevent="selectOption('sol_id', opt)">
+                                [[ opt.label ]]
+                            </div>
+                            <div class="autocomplete-empty" v-if="getMatches('sol_id').length === 0">No matches</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheme Code autocomplete -->
+                <div class="filter-group autocomplete-group">
+                    <label>Scheme Code</label>
+                    <div class="autocomplete-wrap">
+                        <input type="text" v-model="autocomplete.scheme_code.query" placeholder="Search Scheme..."
+                            @input="onAutocompleteInput('scheme_code')" @focus="onAutocompleteFocus('scheme_code')"
+                            @blur="onAutocompleteBlur('scheme_code')">
+                        <button v-if="autocomplete.scheme_code.query" class="clear-btn"
+                            @mousedown.prevent="clearAutocomplete('scheme_code')">×</button>
+
+                        <!-- <div class="autocomplete-dropdown" v-if="autocomplete.scheme_code.open">
+                            <template v-if="getMatches('scheme_code').length">
+                                <div class="autocomplete-item" v-for="opt in getMatches('scheme_code')" :key="opt.value"
+                                    @mousedown.prevent="selectOption('scheme_code', opt)">
+                                    [[ opt.label ]]
+                                </div>
+                            </template>
+                            <div class="autocomplete-empty" v-else>No matches</div>
+                        </div> -->
+                        <!-- Scheme Code autocomplete dropdown -->
+                        <div class="autocomplete-dropdown" v-if="autocomplete.scheme_code.open">
+                            <div class="autocomplete-item" v-for="opt in getMatches('scheme_code')" :key="opt.value"
+                                @mousedown.prevent="selectOption('scheme_code', opt)">
+                                [[ opt.label ]]
+                            </div>
+                            <div class="autocomplete-empty" v-if="getMatches('scheme_code').length === 0">No matches
+                            </div>
+                        </div>
+                        <!-- Agent Code autocomplete dropdown -->
+                        <!-- <div class="autocomplete-dropdown" v-if="autocomplete.agent_code.open">
+                            <div class="autocomplete-item" v-for="opt in getMatches('agent_code')" :key="opt.value"
+                                @mousedown.prevent="selectOption('agent_code', opt)">
+                                [[ opt.label ]]
+                            </div>
+                            <div class="autocomplete-empty" v-if="getMatches('agent_code').length === 0">No matches
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+
+                <!-- Agent Code autocomplete -->
+                <div class="filter-group autocomplete-group">
+                    <label>Agent Code</label>
+                    <div class="autocomplete-wrap">
+                        <input type="text" v-model="autocomplete.agent_code.query" placeholder="Search Agent..."
+                            @input="onAutocompleteInput('agent_code')" @focus="onAutocompleteFocus('agent_code')"
+                            @blur="onAutocompleteBlur('agent_code')">
+                        <button v-if="autocomplete.agent_code.query" class="clear-btn"
+                            @mousedown.prevent="clearAutocomplete('agent_code')">×</button>
+
+                        <!-- <div class="autocomplete-dropdown" v-if="autocomplete.agent_code.open">
+                            <template v-if="getMatches('agent_code').length">
+                                <div class="autocomplete-item" v-for="opt in getMatches('agent_code')" :key="opt.value"
+                                    @mousedown.prevent="selectOption('agent_code', opt)">
+                                    [[ opt.label ]]
+                                </div>
+                            </template>
+                            <div class="autocomplete-empty" v-else>No matches</div>
+                        </div> -->
+                        <!-- Agent Code autocomplete dropdown -->
+                        <div class="autocomplete-dropdown" v-if="autocomplete.agent_code.open">
+                            <div class="autocomplete-item" v-for="opt in getMatches('agent_code')" :key="opt.value"
+                                @mousedown.prevent="selectOption('agent_code', opt)">
+                                [[ opt.label ]]
+                            </div>
+                            <div class="autocomplete-empty" v-if="getMatches('agent_code').length === 0">No matches
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operative Account search -->
+                <div class="filter-group search-group">
+                    <label>Operative Account</label>
+                    <div class="search-input">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="M21 21l-4.35-4.35" />
+                        </svg>
+                        <input type="text" v-model="filters.agent_operative_account" placeholder="Search account no..."
+                            @input="onSearchInput()">
+                        <button v-if="filters.agent_operative_account" class="clear-btn"
+                            @click="filters.agent_operative_account = ''; fetchRecords(true)">×</button>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn-apply" @click="fetchRecords(true)">Apply</button>
+                    <button class="btn-reset" @click="resetFilters()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Active filter chips -->
+            <div class="active-chips" v-if="activeFilterChips.length">
+                <span class="chip-tag" v-for="chip in activeFilterChips" :key="chip.key">
+                    [[ chip.label ]]
+                    <button @click="clearFilter(chip.key)">×</button>
+                </span>
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <div class="table-wrap">
+                    <table>
+                        <!-- <thead>
+                            <tr>
+                                <th>SOL ID</th>
+                                <th>SOL Name</th>
+                                <th>Agent Code</th>
+                                <th>Scheme Code</th>
+                                <th class="num">Eligible Amount</th>
+                                <th class="num">Commission Amount</th>
+                                <th class="num">TDS</th>
+                                <th class="num">Security Deposit</th>
+                                <th class="num">Net Pay</th>
+                                <th class="num">Deduction</th>
+                                <th class="num">Final Net Pay</th>
+                            </tr>
+                        </thead> -->
+                        <!-- <thead>
+                            <tr>
+                                <th>SOL ID</th>
+                                <th>SOL Name</th>
+                                <th>Agent Code</th>
+                                <th>Scheme Code</th>
+                                <th>PAN</th>
+                                <th>PAN Status</th>
+                                <th>CIF</th>
+                                <th>Security Account</th>
+                                <th>Operative Account</th>
+                                <th class="num">Eligible Amount</th>
+                                <th class="num">Commission Amount</th>
+                                <th class="num">TDS</th>
+                                <th class="num">Security Deposit</th>
+                                <th class="num">Net Pay</th>
+                                <th class="num">Deduction</th>
+                                <th class="num">Final Net Pay</th>
+                            </tr>
+                        </thead> -->
+                        <thead>
+                            <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" :checked="isPageAllSelected" @change="toggleSelectAllPage()">
+                                </th>
+                                <th>SOL ID</th>
+                                <th>SOL Name</th>
+                                <th>Agent Code</th>
+                                <th>Scheme Code</th>
+                                <th>PAN</th>
+                                <th>PAN Status</th>
+                                <th>CIF</th>
+                                <th>Security Account</th>
+                                <th>Operative Account</th>
+                                <th class="num">Eligible Amount</th>
+                                <th class="num">Commission Amount</th>
+                                <th class="num">TDS</th>
+                                <th class="num">Security Deposit</th>
+                                <th class="num">Net Pay</th>
+                                <th class="num">Deduction</th>
+                                <th class="num">Final Net Pay</th>
+                            </tr>
+                        </thead>
+                        <!-- <tbody v-if="loading">
+                            <tr class="skeleton-row" v-for="n in 6" :key="n">
+                                <td colspan="11">
+                                    <div class="skeleton-bar"></div>
+                                </td>
+                            </tr>
+                        </tbody> -->
+                        <tbody v-if="loading">
+                            <tr class="skeleton-row" v-for="n in 6" :key="n">
+                                <td colspan="16">
+                                    <div class="skeleton-bar"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+
+                        <tbody v-if="!loading && records.length > 0">
+                            <!-- <tr v-for="(row, idx) in records" :key="row.name"
+                                :style="{ '--row-delay': idx * 35 + 'ms' }" class="data-row">
+                                <td>[[ row.sol_id ]]</td>
+                                <td>[[ row.sol_description || '—' ]]</td>
+                                <td>[[ row.agent_code || '—' ]]</td>
+                                <td><span class="chip" v-if="row.scheme_code">[[ row.scheme_code ]]</span><span
+                                        v-else>—</span></td>
+                                <td class="num">[[ formatCurrency(row.eligible_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.commission_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.tds) ]]</td>
+                                <td class="num">[[ formatCurrency(row.security_deposit) ]]</td>
+                                <td class="num">[[ formatCurrency(row.netpay) ]]</td>
+                                <td class="num muted">NA</td>
+                                <td class="num strong muted">NA</td>
+                            </tr> -->
+                            <!-- working new code -->
+                            <!-- <tr v-for="(row, idx) in records" :key="row.name"
+                                :style="{ '--row-delay': idx * 35 + 'ms' }" class="data-row">
+                                <td>[[ row.sol_id ]]</td>
+                                <td>[[ row.sol_description || '—' ]]</td>
+                                <td>[[ row.agent_code || '—' ]]</td>
+                                <td><span class="chip" v-if="row.scheme_code">[[ row.scheme_code ]]</span><span
+                                        v-else>—</span></td>
+                                <td>[[ row.pan_card || '—' ]]</td>
+                                <td>[[ row.pan_status || '—' ]]</td>
+                                <td>[[ row.cif || '—' ]]</td>
+                                <td>[[ row.agent_security_account || '—' ]]</td>
+                                <td>[[ row.agent_operative_account || '—' ]]</td>
+                                <td class="num">[[ formatCurrency(row.eligible_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.commission_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.tds) ]]</td>
+                                <td class="num">[[ formatCurrency(row.security_deposit) ]]</td>
+                                <td class="num">[[ formatCurrency(row.netpay) ]]</td>
+                                <td class="num muted">NA</td>
+                                <td class="num strong muted">NA</td>
+                            </tr> -->
+
+                            <!-- <tr v-for="(row, idx) in records" :key="row.agent_code"
+                                :style="{ '--row-delay': idx * 35 + 'ms' }" class="data-row">
+                                <td>[[ row.sol_id ]]</td>
+                                <td>[[ row.sol_description || '—' ]]</td>
+                                <td>[[ row.agent_code || '—' ]]</td>
+                                <td><span class="chip" v-if="row.scheme_code">[[ row.scheme_code ]]</span><span
+                                        v-else>—</span></td>
+                                <td>[[ row.pan_card || '—' ]]</td>
+                                <td>[[ row.pan_status || '—' ]]</td>
+                                <td>[[ row.cif || '—' ]]</td>
+                                <td>[[ row.security_account || '—' ]]</td>
+                                <td>[[ row.operative_account || '—' ]]</td>
+                                <td class="num">[[ formatCurrency(row.eligible_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.commission_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.tds) ]]</td>
+                                <td class="num">[[ formatCurrency(row.security_deposit) ]]</td>
+                                <td class="num">[[ formatCurrency(row.netpay) ]]</td>
+                                <td class="num muted">NA</td>
+                                <td class="num strong muted">NA</td>
+                            </tr> -->
+                            <tr v-for="(row, idx) in records" :key="row.agent_code"
+                                :style="{ '--row-delay': idx * 35 + 'ms' }" class="data-row"
+                                :class="{ 'row-selected': isRowSelected(row.agent_code) }">
+                                <td class="checkbox-col">
+                                    <input type="checkbox" :checked="isRowSelected(row.agent_code)"
+                                        @change="toggleRow(row)">
+                                </td>
+                                <td>[[ row.sol_id ]]</td>
+                                <td>[[ row.sol_description || '—' ]]</td>
+                                <td>[[ row.agent_code || '—' ]]</td>
+                                <td><span class="chip" v-if="row.scheme_code">[[ row.scheme_code ]]</span><span
+                                        v-else>—</span></td>
+                                <td>[[ row.pan_card || '—' ]]</td>
+                                <td>[[ row.pan_status || '—' ]]</td>
+                                <td>[[ row.cif || '—' ]]</td>
+                                <td>[[ row.security_account || '—' ]]</td>
+                                <td>[[ row.operative_account || '—' ]]</td>
+                                <td class="num">[[ formatCurrency(row.eligible_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.commission_amount) ]]</td>
+                                <td class="num">[[ formatCurrency(row.tds) ]]</td>
+                                <td class="num">[[ formatCurrency(row.security_deposit) ]]</td>
+                                <td class="num">[[ formatCurrency(row.netpay) ]]</td>
+                                <td class="num muted">NA</td>
+                                <td class="num strong muted">NA</td>
+                            </tr>
+                        </tbody>
+
+                        <!-- <tbody v-if="!loading && records.length === 0">
+                            <tr>
+                                <td colspan="11" class="empty-state">
+                                    <div class="empty-icon">📄</div>
+                                    No commission records found for the selected filters.
+                                </td>
+                            </tr>
+                        </tbody> -->
+                        <tbody v-if="!loading && records.length === 0">
+                            <tr>
+                                <td colspan="16" class="empty-state">
+                                    <div class="empty-icon">📄</div>
+                                    No commission records found for the selected filters.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" v-if="!loading && records.length > 0">
+                    <div class="page-info">
+                        Showing <strong>[[ pageStart ]]–[[ pageEnd ]]</strong> of <strong>[[
+                            formatNumber(pagination.total) ]]</strong> records
+                    </div>
+                    <div class="page-controls">
+                        <button class="page-btn" :disabled="pagination.page === 1"
+                            @click="goToPage(pagination.page - 1)">
+                            ‹ Prev
+                        </button>
+                        <span class="page-num">Page [[ pagination.page ]] of [[ totalPages ]]</span>
+                        <button class="page-btn" :disabled="pagination.page >= totalPages"
+                            @click="goToPage(pagination.page + 1)">
+                            Next ›
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" v-if="showPayDialog" @click.self="closePayDialog()">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h3>Confirm Payment Run</h3>
+                    <button class="modal-close" @click="closePayDialog()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p>You are about to run payment for the selected agent-wise consolidated records below. Unselected
+                        records will be <strong>excluded</strong> from this payment run.</p>
+                    <div class="modal-stats">
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Selected Records</div>
+                            <div class="modal-stat-value">[[ selectedCount ]]</div>
+                        </div>
+                        <div class="modal-stat">
+                            <div class="modal-stat-label">Total Net Pay</div>
+                            <div class="modal-stat-value">₹[[ formatNumber(selectedTotalNetPay) ]]</div>
+                        </div>
+                    </div>
+                    <div class="modal-error" v-if="payError">⚠️ [[ payError ]]</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-reset" @click="closePayDialog()" :disabled="payProcessing">Cancel</button>
+                    <button class="btn-apply" @click="confirmPayment()" :disabled="payProcessing">
+                        [[ payProcessing ? 'Processing...' : 'Confirm & Pay' ]]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---- Field mapping matches the "Commission" doctype exactly ----
+        // const CONFIG = {
+        //     doctype: 'Commission',
+        //     fields: [
+        //         'name', 'sol_id', 'sol_description', 'agent_code', 'agent_name', 'scheme_code',
+        //         'scheme_description', 'agent_operative_account', 'customer_account_number',
+        //         'eligible_amount', 'commission_amount', 'tds', 'security_deposit', 'netpay'
+        //     ],
+        //     summaryMethod: '/api/method/banking_api.www.commission.get_commission_summary',
+        //     filterOptionsMethod: '/api/method/banking_api.www.commission.get_commission_filter_options'
+        // };
+
+        // const CONFIG = {
+        //     doctype: 'Commission',
+        //     fields: [
+        //         'name', 'sol_id', 'sol_description', 'agent_code', 'agent_name', 'scheme_code',
+        //         'scheme_description', 'agent_operative_account', 'customer_account_number',
+        //         'eligible_amount', 'commission_amount', 'tds', 'security_deposit', 'netpay',
+        //         'pan_card', 'pan_status', 'cif', 'agent_security_account', 'agent_operative_account'
+        //     ],
+        //     summaryMethod: '/api/method/banking_api.www.commission.get_commission_summary',
+        //     filterOptionsMethod: '/api/method/banking_api.www.commission.get_commission_filter_options'
+        // };
+        const CONFIG = {
+            groupedMethod: '/api/method/banking_api.www.commission.get_commission_grouped',
+            groupedCountMethod: '/api/method/banking_api.www.commission.get_commission_grouped_count',
+            summaryMethod: '/api/method/banking_api.www.commission.get_commission_summary',
+            filterOptionsMethod: '/api/method/banking_api.www.commission.get_commission_filter_options'
+        };
+
+        const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        function apiHeaders() {
+            return { 'X-Frappe-CSRF-Token': CSRF_TOKEN };
+        }
+
+        async function apiGet(path, params) {
+            const qs = new URLSearchParams(params).toString();
+            const res = await fetch(`${path}?${qs}`, { headers: apiHeaders(), credentials: 'same-origin' });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const detail = json._server_messages || json.exc || json.message || res.statusText;
+                throw new Error(`${res.status}: ${detail}`);
+            }
+            return json.message;
+        }
+
+        function toNumber(val) {
+            const n = parseFloat(val);
+            return isNaN(n) ? 0 : n;
+        }
+
+        const app = PetiteVue.createApp({
+            $delimiters: ['[[', ']]'],
+
+            loading: false,
+            errorMsg: '',
+            records: [],
+
+            filters: {
+                sol_id: '',
+                scheme_code: '',
+                agent_code: '',
+                agent_operative_account: ''
+            },
+
+            // raw options fetched from server
+            filterOptions: {
+                sol_list: [],
+                scheme_list: [],
+                agent_list: []
+            },
+
+            // normalized to [{value, label}] for uniform autocomplete handling
+            normalizedOptions: {
+                sol_id: [],
+                scheme_code: [],
+                agent_code: []
+            },
+
+            // autocomplete UI state per filter
+            autocomplete: {
+                sol_id: { query: '', open: false },
+                scheme_code: { query: '', open: false },
+                agent_code: { query: '', open: false }
+            },
+
+            pagination: { page: 1, pageSize: 10, total: 0 },
+
+            summary: {
+                total_records: 0,
+                total_eligible: 0,
+                total_commission: 0,
+                total_netpay: 0,
+                total_security_deposit: 0
+            },
+
+            displayValues: {
+                total_records: 0,
+                total_eligible: 0,
+                total_commission: 0,
+                total_netpay: 0,
+                total_security_deposit: 0
+            },
+
+            statCards: [
+                { key: 'total_records', label: 'Total Records', icon: '#', prefix: '', color: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+                { key: 'total_eligible', label: 'Eligible Amount', icon: '₹', prefix: '₹', color: 'linear-gradient(135deg,#0ea5e9,#22d3ee)' },
+                { key: 'total_commission', label: 'Commission Amount', icon: '₹', prefix: '₹', color: 'linear-gradient(135deg,#f59e0b,#f97316)' },
+                { key: 'total_netpay', label: 'Net Pay', icon: '₹', prefix: '₹', color: 'linear-gradient(135deg,#10b981,#14b8a6)' },
+                { key: 'total_security_deposit', label: 'Security Deposit', icon: '₹', prefix: '₹', color: 'linear-gradient(135deg,#ec4899,#f43f5e)' }
+            ],
+
+            searchTimer: null,
+
+            selectedRecords: {},   // { [agent_code]: rowObject } — persists across pagination
+            showPayDialog: false,
+            payProcessing: false,
+            payError: '',
+
+            get selectedCount() {
+                return Object.keys(this.selectedRecords).length;
+            },
+            get selectedTotalNetPay() {
+                return Object.values(this.selectedRecords).reduce((s, r) => s + toNumber(r.netpay), 0);
+            },
+            get isPageAllSelected() {
+                return this.records.length > 0 && this.records.every(r => !!this.selectedRecords[r.agent_code]);
+            },
+
+            isRowSelected(agentCode) {
+                return !!this.selectedRecords[agentCode];
+            },
+
+            toggleRow(row) {
+                const key = row.agent_code;
+                if (this.selectedRecords[key]) {
+                    delete this.selectedRecords[key];
+                } else {
+                    this.selectedRecords[key] = row;
+                }
+            },
+
+            toggleSelectAllPage() {
+                const allSelected = this.isPageAllSelected;
+                this.records.forEach(row => {
+                    if (allSelected) {
+                        delete this.selectedRecords[row.agent_code];
+                    } else {
+                        this.selectedRecords[row.agent_code] = row;
+                    }
+                });
+            },
+
+            openPayDialog() {
+                if (this.selectedCount === 0) return;
+                this.payError = '';
+                this.showPayDialog = true;
+            },
+
+            closePayDialog() {
+                if (this.payProcessing) return;
+                this.showPayDialog = false;
+            },
+
+            async confirmPayment() {
+                this.payProcessing = true;
+                this.payError = '';
+                try {
+                    const agentCodes = Object.keys(this.selectedRecords);
+                    const res = await fetch('/api/method/banking_api.www.commission.run_commission_payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...apiHeaders() },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            agent_codes: agentCodes,
+                            filters: this.buildFilters()
+                        })
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        const detail = json._server_messages || json.exc || json.message || res.statusText;
+                        throw new Error(detail);
+                    }
+
+                    this.showPayDialog = false;
+                    this.selectedRecords = {};
+                    this.errorMsg = '';
+                    await this.fetchRecords(false);
+                } catch (e) {
+                    console.error('Payment run failed', e);
+                    this.payError = e.message || 'Payment run failed. Please try again.';
+                } finally {
+                    this.payProcessing = false;
+                }
+            },
+
+            get totalPages() {
+                return Math.max(1, Math.ceil(this.pagination.total / this.pagination.pageSize));
+            },
+            get pageStart() {
+                return this.pagination.total === 0 ? 0 : (this.pagination.page - 1) * this.pagination.pageSize + 1;
+            },
+            get pageEnd() {
+                return Math.min(this.pagination.page * this.pagination.pageSize, this.pagination.total);
+            },
+            get activeFilterChips() {
+                const chips = [];
+                if (this.filters.sol_id) {
+                    const opt = this.normalizedOptions.sol_id.find(o => String(o.value) === String(this.filters.sol_id));
+                    chips.push({ key: 'sol_id', label: 'SOL: ' + (opt ? opt.label : this.filters.sol_id) });
+                }
+                if (this.filters.scheme_code) chips.push({ key: 'scheme_code', label: 'Scheme: ' + this.filters.scheme_code });
+                if (this.filters.agent_code) chips.push({ key: 'agent_code', label: 'Agent: ' + this.filters.agent_code });
+                if (this.filters.agent_operative_account) chips.push({ key: 'agent_operative_account', label: 'Account: ' + this.filters.agent_operative_account });
+                return chips;
+            },
+
+            // ---------- Autocomplete helpers ----------
+            getMatches(type) {
+                const q = (this.autocomplete[type].query || '').toLowerCase().trim();
+                const list = this.normalizedOptions[type] || [];
+                if (!q) return list.slice(0, 50);
+                return list.filter(o => String(o.label).toLowerCase().includes(q)).slice(0, 50);
+            },
+
+            onAutocompleteInput(type) {
+                this.autocomplete[type].open = true;
+                // typing invalidates a previous selection until user picks again
+                if (!this.autocomplete[type].query) {
+                    if (this.filters[type]) {
+                        this.filters[type] = '';
+                        this.fetchRecords(true);
+                    }
+                }
+            },
+
+            onAutocompleteFocus(type) {
+                this.autocomplete[type].open = true;
+            },
+
+            onAutocompleteBlur(type) {
+                setTimeout(() => { this.autocomplete[type].open = false; }, 150);
+            },
+
+            selectOption(type, opt) {
+                this.filters[type] = opt.value;
+                this.autocomplete[type].query = opt.label;
+                this.autocomplete[type].open = false;
+                this.fetchRecords(true);
+            },
+
+            clearAutocomplete(type) {
+                this.autocomplete[type].query = '';
+                this.filters[type] = '';
+                this.autocomplete[type].open = false;
+                this.fetchRecords(true);
+            },
+            // -------------------------------------------
+
+            buildFilters() {
+                const f = [];
+                if (this.filters.sol_id) f.push(['sol_id', '=', this.filters.sol_id]);
+                if (this.filters.scheme_code) f.push(['scheme_code', '=', this.filters.scheme_code]);
+                if (this.filters.agent_code) f.push(['agent_code', '=', this.filters.agent_code]);
+                if (this.filters.agent_operative_account) f.push(['agent_operative_account', 'like', `%${this.filters.agent_operative_account}%`]);
+                return f;
+            },
+
+            // async fetchRecords(resetPage) {
+            //     if (resetPage) this.pagination.page = 1;
+            //     this.loading = true;
+            //     this.errorMsg = '';
+            //     try {
+            //         const filters = this.buildFilters();
+
+            //         const [listRes, countRes] = await Promise.all([
+            //             apiGet('/api/method/frappe.client.get_list', {
+            //                 doctype: CONFIG.doctype,
+            //                 fields: JSON.stringify(CONFIG.fields),
+            //                 filters: JSON.stringify(filters),
+            //                 order_by: 'modified desc',
+            //                 limit_page_length: this.pagination.pageSize,
+            //                 limit_start: (this.pagination.page - 1) * this.pagination.pageSize
+            //             }),
+            //             apiGet('/api/method/frappe.client.get_count', {
+            //                 doctype: CONFIG.doctype,
+            //                 filters: JSON.stringify(filters)
+            //             })
+            //         ]);
+
+            //         this.records = listRes || [];
+            //         this.pagination.total = countRes || 0;
+
+            //         await this.fetchSummary(filters);
+            //     } catch (e) {
+            //         console.error('Failed to load commission data', e);
+            //         this.errorMsg = e.message || 'Failed to load records.';
+            //         this.records = [];
+            //     } finally {
+            //         this.loading = false;
+            //     }
+            // },
+
+
+            async fetchRecords(resetPage) {
+                if (resetPage) this.pagination.page = 1;
+                this.loading = true;
+                this.errorMsg = '';
+                try {
+                    const filters = this.buildFilters();
+
+                    const [listRes, countRes] = await Promise.all([
+                        apiGet(CONFIG.groupedMethod, {
+                            filters: JSON.stringify(filters),
+                            limit_start: (this.pagination.page - 1) * this.pagination.pageSize,
+                            limit_page_length: this.pagination.pageSize
+                        }),
+                        apiGet(CONFIG.groupedCountMethod, {
+                            filters: JSON.stringify(filters)
+                        })
+                    ]);
+
+                    this.records = listRes || [];
+                    this.pagination.total = countRes || 0;
+
+                    await this.fetchSummary(filters);
+                } catch (e) {
+                    console.error('Failed to load commission data', e);
+                    this.errorMsg = e.message || 'Failed to load records.';
+                    this.records = [];
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async fetchSummary(filters) {
+                try {
+                    const res = await apiGet(CONFIG.summaryMethod, {
+                        filters: JSON.stringify(filters)
+                    });
+                    this.summary = Object.assign(this.summary, res);
+                } catch (e) {
+                    console.warn('Summary API not available, falling back to page-level totals', e);
+                    this.summary.total_records = this.pagination.total;
+                    this.summary.total_eligible = this.records.reduce((s, r) => s + toNumber(r.eligible_amount), 0);
+                    this.summary.total_commission = this.records.reduce((s, r) => s + toNumber(r.commission_amount), 0);
+                    this.summary.total_netpay = this.records.reduce((s, r) => s + toNumber(r.netpay), 0);
+                    this.summary.total_security_deposit = this.records.reduce((s, r) => s + toNumber(r.security_deposit), 0);
+                }
+                this.animateCounters();
+            },
+
+            async fetchFilterOptions() {
+                try {
+                    const res = await apiGet(CONFIG.filterOptionsMethod, {});
+                    this.filterOptions = Object.assign(this.filterOptions, res);
+
+                    // normalize for autocomplete
+                    this.normalizedOptions.sol_id = this.filterOptions.sol_list || [];
+                    this.normalizedOptions.scheme_code = (this.filterOptions.scheme_list || []).map(v => ({ value: v, label: String(v) }));
+                    this.normalizedOptions.agent_code = (this.filterOptions.agent_list || []).map(v => ({ value: v, label: String(v) }));
+                } catch (e) {
+                    console.warn('Filter options API not available yet', e);
+                }
+            },
+
+            animateCounters() {
+                const duration = 700;
+                const start = performance.now();
+                const from = Object.assign({}, this.displayValues);
+                const to = this.summary;
+
+                const step = (now) => {
+                    const progress = Math.min((now - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    Object.keys(to).forEach(key => {
+                        this.displayValues[key] = from[key] + (to[key] - from[key]) * eased;
+                    });
+                    if (progress < 1) requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            },
+
+            onSearchInput() {
+                clearTimeout(this.searchTimer);
+                this.searchTimer = setTimeout(() => this.fetchRecords(true), 400);
+            },
+
+            goToPage(page) {
+                if (page < 1 || page > this.totalPages) return;
+                this.pagination.page = page;
+                this.fetchRecords(false);
+                document.querySelector('.table-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            },
+
+            clearFilter(key) {
+                this.filters[key] = '';
+                if (this.autocomplete[key]) this.autocomplete[key].query = '';
+                this.fetchRecords(true);
+            },
+
+            resetFilters() {
+                this.filters = { sol_id: '', scheme_code: '', agent_code: '', agent_operative_account: '' };
+                Object.keys(this.autocomplete).forEach(k => { this.autocomplete[k].query = ''; this.autocomplete[k].open = false; });
+                this.fetchRecords(true);
+            },
+
+            refreshAll() {
+                this.fetchFilterOptions();
+                this.fetchRecords(false);
+            },
+
+            formatNumber(val) {
+                return Math.round(val || 0).toLocaleString('en-IN');
+            },
+
+            formatCurrency(val) {
+                if (val === null || val === undefined || val === '') return '—';
+                return '₹' + toNumber(val).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+            },
+
+            init() {
+                this.fetchFilterOptions();
+                this.fetchRecords(true);
+            }
+            // }).mount('#app');
+        }); app.mount('#app');
+    </script>
+</body>
+
+</html>
