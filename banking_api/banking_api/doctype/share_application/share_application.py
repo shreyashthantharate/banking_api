@@ -274,6 +274,23 @@ def normalize_branch_name(branch_name: str) -> str:
 #         {"date": date_obj},
 #         "name"
 #     )
+#     add_left("")
+#     add_left("मुख्य कार्यकारी अधिकारी", bold=True)
+#     add_left("सहयोग मल्टीस्टेट क्रेडिट को-ऑपरेटिव्ह सोसायटी लि.", bold=True)
+#     add_left("मुख्यालय, गोंदिया", bold=True)
+#     add_left("")
+#     add_left("अध्यक्ष", bold=True)
+#     add_left("सहयोग मल्टीस्टेट क्रेडिट को-ऑपरेटिव्ह सोसायटी लि.", bold=True)
+#     add_left("मुख्यालय, गोंदिया", bold=True)
+
+#     file_buffer = io.BytesIO()
+#     doc.save(file_buffer)
+#     file_buffer.seek(0)
+
+#     frappe.response.filename = f"Proceeding_Form_{selected_date}.docx"
+#     frappe.response.filecontent = file_buffer.getvalue()
+#     frappe.response.type = "download"
+#     frappe.response.display_content_as = "attachment"
 
 #     if existing_name:
 #         existing_doc = frappe.get_doc("Share Proceeding Log", existing_name)
