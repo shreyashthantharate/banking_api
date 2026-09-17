@@ -270,9 +270,9 @@ function open_share_certificate_dialog(frm) {
 			const positions = {
 				certificate: {
 					share_certificate_no: { top: 169, left: 495, width: 150, font_size: 12 },
-					account_no: { top: 180, left: 832, width: 120, font_size: 12 },
-					name: { top: 233, left: 454, width: 490, font_size: 12 },
-					address: { top: 261, left: 418, width: 540, font_size: 11 },
+					account_no: { top: 179, left: 821, width: 120, font_size: 12 },
+					name: { top: 234, left: 454, width: 490, font_size: 12 },
+					address: { top: 262, left: 418, width: 540, font_size: 11 },
 					number_of_share: { top: 288, left: 544, width: 55, font_size: 12 },
 					from_no: { top: 288, left: 765, width: 65, font_size: 12 },
 					to_no: { top: 288, left: 904, width: 70, font_size: 12 },
@@ -281,14 +281,14 @@ function open_share_certificate_dialog(frm) {
 				},
 				receipt: {
 					share_certificate_no: { top: 28, left: 24, width: 120, font_size: 12 },
-					account_no: { top: 28, left: 202, width: 115, font_size: 12 },
+					account_no: { top: 28, left: 203, width: 115, font_size: 12 },
 					name: { top: 174, left: 78, width: 250, font_size: 12 },
-					address: { top: 195, left: 52, width: 290, font_size: 11 },
-					number_of_share: { top: 236, left: 184, width: 40, font_size: 12 },
-					from_no: { top: 256, left: 113, width: 75, font_size: 12 },
-					to_no: { top: 256, left: 265, width: 65, font_size: 12 },
-					rs: { top: 297, left: 164, width: 70, font_size: 12 },
-					issued_date: { top: 461, left: 187, width: 130, font_size: 12 }
+					address: { top: 216, left: 52, width: 290, font_size: 11 },
+					number_of_share: { top: 256, left: 184, width: 40, font_size: 12 },
+					from_no: { top: 276, left: 113, width: 75, font_size: 12 },
+					to_no: { top: 276, left: 265, width: 65, font_size: 12 },
+					rs: { top: 317, left: 164, width: 70, font_size: 12 },
+					issued_date: { top: 481, left: 187, width: 130, font_size: 12 }
 				}
 			};
 

@@ -754,7 +754,8 @@ def pay_now_share_application(entry_name):
                     "account_closed": 0,
                     "insufficient_balance": 0,
                     "account_frozen": 0,
-                    "transaction_amount": total_debit_amount
+                    "transaction_amount": total_debit_amount,
+                    "amount": total_debit_amount / 2
                 },
                 update_modified=True
             )

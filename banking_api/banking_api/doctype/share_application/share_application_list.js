@@ -59,7 +59,52 @@ frappe.listview_settings["Share Application"] = {
     //     }, 50);
     // }
 
+    button: {
+        show(doc) {
+            return doc.docstatus === 0 && doc.payment_status !== "Success";
+        },
+        get_label() {
+            return __("Pay Now");
+        },
+        get_description(doc) {
+            return __("Initiate fund transfer for {0}", [doc.name]);
+        },
+        action(doc) {
+            frappe.confirm(
+                __("Are you sure you want to initiate the fund transfer for this Share Application?"),
+                function () {
+                    frappe.call({
+                        method: "banking_api.banking_api.doctype.share_application_settings.share_application_settings.pay_now_share_application",
+                        args: {
+                            entry_name: doc.name
+                        },
+                        freeze: true,
+                        freeze_message: __("Initiating fund transfer..."),
+                        callback: function (r) {
+                            if (r.message) {
+                                frappe.msgprint({
+                                    title: __("Fund Transfer Result"),
+                                    message: r.message.message || __("Process completed."),
+                                    indicator:
+                                        r.message.status === "success"
+                                            ? "green"
+                                            : (r.message.status === "warning" ? "orange" : "red")
+                                });
+                            }
+                            listview.refresh();
+                        }
+                    });
+                }
+            );
+        }
+    },
+
     refresh(listview) {
+        hide_share_application_sidebar(listview);
+        hide_share_application_list_view_button(listview);
+        // hide_share_application_menu_button(listview);
+        // fix_share_application_header_layout(listview);
+
         if (listview.page.__share_actions_added) return;
         listview.page.__share_actions_added = true;
 
@@ -113,6 +158,10 @@ frappe.listview_settings["Share Application"] = {
         listview.page.add_inner_button(__("Proceeding Form"), () => {
             open_proceeding_form_dialog();
         }, action_label);
+
+        listview.page.add_inner_button(__("Loan Meeting Register"), () => {
+            open_loan_meeting_register_dialog();
+        }, action_label);
     }
 };
 
@@ -135,7 +184,7 @@ function open_proceeding_form_dialog() {
             }
 
             window.open(
-                `/api/method/banking_api.banking_api.doctype.share_application.share_application.download_proceeding_form?account_opening_date=${encodeURIComponent(values.account_opening_date)}`,
+                `/api/method/banking_api.banking_api.doctype.share_application.share_application.download_proceeding_form_pdf?account_opening_date=${encodeURIComponent(values.account_opening_date)}`,
                 "_blank"
             );
 
@@ -375,31 +424,322 @@ function fix_share_application_header_layout(listview) {
 
 function hide_share_application_sidebar(listview) {
     const $wrapper = listview.page.wrapper;
-    const $side_section = $wrapper.find(".layout-side-section");
-    const $main_section = $wrapper.find(".layout-main-section");
 
-    if ($side_section.length) {
-        $side_section.hide();
-    }
+    const apply_full_width = () => {
+        const $side_section = $wrapper.find(".layout-side-section");
+        const $main_section = $wrapper.find(".layout-main-section");
+        const $main_wrapper = $wrapper.find(".col.layout-main-section-wrapper");
 
-    if ($main_section.length) {
-        $main_section.removeClass("col-lg-10 col-md-10");
-        $main_section.addClass("col-lg-12 col-md-12");
-        $main_section.css({
+        $side_section.hide().css({
+            display: "none",
+            width: "0",
+            minWidth: "0",
+            flex: "0 0 0%",
+            maxWidth: "0"
+        });
+
+        if ($main_wrapper.length) {
+            $main_wrapper.removeClass("col-lg-10 col-md-10 col-sm-10");
+            $main_wrapper.addClass("col-lg-12 col-md-12 col-sm-12");
+            $main_wrapper.css({
+                width: "100%",
+                maxWidth: "100%",
+                flex: "0 0 100%"
+            });
+        }
+
+        if ($main_section.length) {
+            $main_section.removeClass("col-lg-10 col-md-10 col-sm-10");
+            $main_section.addClass("col-lg-12 col-md-12 col-sm-12");
+            $main_section.css({
+                width: "100%",
+                maxWidth: "100%",
+                flex: "0 0 100%",
+                paddingLeft: "15px",
+                paddingRight: "15px"
+            });
+        }
+
+        $wrapper.find(".layout-main").css({
             width: "100%",
             maxWidth: "100%",
-            flex: "0 0 100%"
+            display: "block"
         });
-    }
 
-    $wrapper.find(".layout-main").css({
-        width: "100%"
-    });
+        $wrapper.find(".list-row-container, .result, .frappe-list, .list-view-container").css({
+            width: "100%",
+            maxWidth: "100%"
+        });
 
-    $wrapper.find(".list-row-container, .result, .frappe-list").css({
+        $wrapper.find(".sidebar-toggle-btn, .list-sidebar-toggle, [data-label='Toggle Sidebar']").hide();
+    };
+
+    apply_full_width();
+    setTimeout(apply_full_width, 0);
+    setTimeout(apply_full_width, 100);
+    setTimeout(apply_full_width, 300);
+    setTimeout(apply_full_width, 700);
+}
+
+function hide_share_application_list_view_button(listview) {
+    const hide_list_view_button = () => {
+        const $wrapper = listview.page.wrapper;
+
+        $wrapper.find(".custom-btn-group").each(function () {
+            const $group = $(this);
+            const label = $group
+                .find(".custom-btn-group-label")
+                .first()
+                .text()
+                .trim();
+
+            if (label === __("List View") || label === "List View") {
+                $group.hide();
+            }
+        });
+    };
+
+    // Hide immediately if already rendered
+    hide_list_view_button();
+
+    // Frappe may render the view switcher after refresh
+    setTimeout(hide_list_view_button, 0);
+    setTimeout(hide_list_view_button, 100);
+    setTimeout(hide_list_view_button, 300);
+    setTimeout(hide_list_view_button, 700);
+}
+
+
+function hide_share_application_menu_button(listview) {
+    const hide_menu_button = () => {
+        const $wrapper = listview.page.wrapper;
+
+        $wrapper
+            .find('button[aria-label="Menu"]')
+            .closest(".menu-btn-group")
+            .hide();
+    };
+
+    hide_menu_button();
+
+    // Frappe may render it after the initial refresh
+    setTimeout(hide_menu_button, 0);
+    setTimeout(hide_menu_button, 100);
+    setTimeout(hide_menu_button, 300);
+    setTimeout(hide_menu_button, 700);
+}
+
+function fix_share_application_header_layout(listview) {
+    const $wrapper = listview.page.wrapper;
+
+    $wrapper.find(".page-head-content").css({
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "nowrap",
         width: "100%",
         maxWidth: "100%"
     });
 
-    $wrapper.find(".sidebar-toggle-btn").hide();
+    $wrapper.find(".page-title").css({
+        flex: "0 1 auto",
+        minWidth: "0"
+    });
+
+    $wrapper.find(".page-actions").css({
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+        gap: "8px",
+        marginLeft: "auto",
+        marginRight: "0",
+        width: "auto"
+    });
+
+    $wrapper.find(".page-actions .custom-actions").css({
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+        gap: "10px",
+        marginBottom: "0",
+        flex: "0 0 auto",
+        marginRight: "0"
+    });
+
+    $wrapper.find(".page-actions .standard-actions").css({
+        display: "inline-flex",
+        alignItems: "center",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+        flex: "0 0 auto",
+        marginLeft: "0"
+    });
+
+    $wrapper.find(".share-status-wrap").css({
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        gap: "8px",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+        marginRight: "12px",
+        flex: "0 0 auto"
+    });
+
+    $wrapper.find(".share-status-capsules").css({
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        flexWrap: "nowrap",
+        whiteSpace: "nowrap",
+        gap: "6px",
+        flex: "0 0 auto"
+    });
+
+    // Remove any hidden button groups still taking space
+    $wrapper.find(".custom-btn-group, .menu-btn-group").css({
+        display: "none",
+        width: "0",
+        minWidth: "0",
+        margin: "0",
+        padding: "0",
+        border: "0"
+    });
+}
+
+
+// function open_loan_meeting_register_dialog() {
+//     const d = new frappe.ui.Dialog({
+//         title: __("Download Loan Meeting Register"),
+//         fields: [
+//             {
+//                 fieldname: "from_date",
+//                 label: __("From Date"),
+//                 fieldtype: "Date",
+//                 reqd: 1
+//             },
+//             {
+//                 fieldname: "to_date",
+//                 label: __("To Date"),
+//                 fieldtype: "Date",
+//                 reqd: 1
+//             }
+//         ],
+//         primary_action_label: __("Download"),
+//         primary_action(values) {
+//             if (!values.from_date || !values.to_date) {
+//                 frappe.msgprint(__("Please select both From Date and To Date."));
+//                 return;
+//             }
+
+//             if (values.from_date > values.to_date) {
+//                 frappe.msgprint(__("From Date cannot be greater than To Date."));
+//                 return;
+//             }
+
+//             const endpoint =
+//                 "/api/method/banking_api.banking_api.doctype.share_application.share_application.download_loan_meeting_register";
+
+//             const query_string = new URLSearchParams({
+//                 from_date: values.from_date,
+//                 to_date: values.to_date
+//             });
+
+//             window.open(`${endpoint}?${query_string.toString()}`, "_blank");
+
+//             d.hide();
+//         }
+//     });
+
+//     d.show();
+// }
+
+
+// function open_proceeding_form_dialog() {
+//     const d = new frappe.ui.Dialog({
+//         title: __("Generate Loan Meeting Register"),
+//         fields: [
+//             {
+//                 fieldname: "start_date",
+//                 label: __("Start Date"),
+//                 fieldtype: "Date",
+//                 reqd: 1
+//             },
+//             {
+//                 fieldname: "end_date",
+//                 label: __("End Date"),
+//                 fieldtype: "Date",
+//                 reqd: 1
+//             }
+//         ],
+//         primary_action_label: __("Download"),
+//         primary_action(values) {
+//             if (!values.start_date) {
+//                 frappe.msgprint(__("Please select Start Date."));
+//                 return;
+//             }
+
+//             if (!values.end_date) {
+//                 frappe.msgprint(__("Please select End Date."));
+//                 return;
+//             }
+
+//             if (values.start_date > values.end_date) {
+//                 frappe.msgprint(__("Start Date cannot be greater than End Date."));
+//                 return;
+//             }
+
+//             const method =
+//                 "banking_api.banking_api.doctype.share_application.share_application.download_loan_meeting_register_pdf";
+
+//             const url =
+//                 `/api/method/${method}` +
+//                 `?start_date=${encodeURIComponent(values.start_date)}` +
+//                 `&end_date=${encodeURIComponent(values.end_date)}`;
+
+//             window.open(url, "_blank");
+
+//             d.hide();
+//         }
+//     });
+
+//     d.show();
+// }.
+
+function open_loan_meeting_register_dialog() {
+    const d = new frappe.ui.Dialog({
+        title: __("Generate Loan Meeting Register"),
+        fields: [
+            {
+                fieldname: "account_opening_date",
+                label: __("Account Opening Date"),
+                fieldtype: "Date",
+                reqd: 1,
+                default: frappe.datetime.nowdate()
+            }
+        ],
+        primary_action_label: __("Download PDF"),
+        primary_action(values) {
+            if (!values.account_opening_date) {
+                frappe.msgprint(__("Please select Account Opening Date."));
+                return;
+            }
+
+            const method =
+                "banking_api.banking_api.doctype.share_application.share_application.download_loan_meeting_register_pdf";
+
+            const url =
+                `/api/method/${method}` +
+                `?account_opening_date=${encodeURIComponent(values.account_opening_date)}`;
+
+            window.open(url, "_blank");
+            d.hide();
+        }
+    });
+
+    d.show();
 }
