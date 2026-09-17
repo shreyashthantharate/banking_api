@@ -161,7 +161,6 @@ def generate_pan_update_report():
 
         for item in payload:
             values = item.get("values") or {}
-            sr_no_src = item.get("sr_no")
 
             pan = values.get("pan")
             account_number = values.get("account_number")
@@ -175,9 +174,10 @@ def generate_pan_update_report():
 
             seen_keys.add(key)
 
-            # Store base row (we'll add incremental sr_no later)
+            # Store base row
             unique_rows.append({
-                "orgkey": values.get("orgkey"),
+                # keep reading 'orgkey' from payload, but label as cif_id
+                "cif_id": values.get("orgkey"),
                 "field_name": values.get("field_name"),
                 "application_id": values.get("application_id"),
                 "pan": pan,
@@ -196,7 +196,7 @@ def generate_pan_update_report():
     for idx, row in enumerate(unique_rows, start=1):
         rows.append({
             "sr_no": idx,
-            "orgkey": row["orgkey"],
+            "cif_id": row["cif_id"],
             "field_name": row["field_name"],
             "application_id": row["application_id"],
             "pan": row["pan"],
@@ -209,7 +209,7 @@ def generate_pan_update_report():
 
     headers = [
         "sr_no",
-        "orgkey",
+        "cif_id",
         "field_name",
         "application_id",
         "pan",
